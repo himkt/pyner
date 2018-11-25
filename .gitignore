@@ -1,0 +1,35 @@
+# emacs
+*~
+
+# compiled
+*.pyc
+
+# IntelliJ
+.idea
+*.iml
+
+# model
+model
+
+# data
+data
+
+# notebook
+notebook/.ipynb_checkpoints
+
+# kytea model, which are now included
+# *.knm
+
+/data/external
+/prediction
+
+.*
+!.gitignore
+
+build
+dist
+*.egg-info
+
+/script/conlleval
+
+/cover
