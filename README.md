@@ -1,6 +1,11 @@
-# PyNER: Named Entity Recognizer powered by Character-based Neural Ontology Classifier
+# PyNER: Named Entity Recognizer
 
-## QuickStart
+## Reference
+- [Neural Architectures for Named Entity Recognition]
+  - NAACL2016
+  - Lample et al.
+
+### QuickStart
 
 - build container
 
@@ -24,3 +29,5 @@ In Docker container
 make install  # you have to run this command on docker container
 python3 pyner/named_entity/train.py config/001.config --gpu 0
 ```
+
+[Neural Architectures for Named Entity Recognition]: https://arxiv.org/abs/1603.01360
