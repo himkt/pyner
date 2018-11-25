@@ -1,0 +1,20 @@
+awscli
+click
+matplotlib
+jupyter
+notebook
+Sphinx
+flake8
+numpy
+python-crfsuite
+tabulate
+akagi
+scikit-learn==0.19
+gensim
+seqeval
+chainerui
+
+# corpus parser
+git+https://github.com/attardi/wikiextractor
+kytea
+natto-py
