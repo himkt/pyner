@@ -1,9 +1,9 @@
-# PyNER: Named Entity Recognizer
+<div align="center"><img src="./static/image/pyner.png" width="800"/></div>
 
-## Reference
-- [Neural Architectures for Named Entity Recognition]
-  - NAACL2016
-  - Lample et al.
+# PyNER: Extensible Implementation for Neural Named Entity Recognizer
+PyNER is a chainer implementation for neural named entity recognizer.
+It is designed so that users can define arbitrary module (e.g. LSTM, CNN, ...).
+PyNER also provides Dataset class and Evaluator class suited to sequence labeling tasks.
 
 ### QuickStart
 
@@ -29,5 +29,11 @@ In Docker container
 make install  # you have to run this command on docker container
 python3 pyner/named_entity/train.py config/001.config --gpu 0
 ```
+
+## Reference
+- [Neural Architectures for Named Entity Recognition]
+  - NAACL2016
+  - Lample et al.
+
 
 [Neural Architectures for Named Entity Recognition]: https://arxiv.org/abs/1603.01360
