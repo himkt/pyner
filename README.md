@@ -5,6 +5,11 @@ PyNER is a chainer implementation for neural named entity recognizer.
 It is designed so that users can define arbitrary module (e.g. LSTM, CNN, ...).
 PyNER also provides Dataset class and Evaluator class suited to sequence labeling tasks.
 
+### Prepare dataset
+
+Please see [README for corpus parser](tool/corpus/README.md) and [README for word vector](tool/vector/README) 
+to prepare dataset.
+
 ### QuickStart
 
 - build container
