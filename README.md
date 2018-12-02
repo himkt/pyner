@@ -10,6 +10,8 @@ PyNER also provides Dataset class and Evaluator class suited to sequence labelin
 Please see [README for corpus parser](tool/corpus/README.md) and [README for word vector](tool/vector/README) 
 to prepare dataset.
 
+Dataset format is the same as https://github.com/guillaumegenthial/tf_ner/tree/master/data/example
+
 ### QuickStart
 
 - build container
