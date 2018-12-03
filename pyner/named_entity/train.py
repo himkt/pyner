@@ -1,7 +1,6 @@
 from pyner.dict import Dictionary
 from pyner.extension import LearningRateDecay
 from pyner.vocab import Vocabulary
-from pyner.vocab import load_pretrained_word_vector
 from pyner.named_entity.dataset import converter
 from pyner.named_entity.dataset import DatasetTransformer
 from pyner.named_entity.dataset import NamedEntityDataset
@@ -52,7 +51,7 @@ if __name__ == '__main__':
     if 'word_vector' in params:
         word2idx = vocab.dictionaries['word2idx']
         word_vector = params['word_vector']
-        word_vectors = load_pretrained_word_vector(word2idx, word_vector)
+        word_vectors = vocab.load_pretrained_word_vector(word2idx, word_vector)
 
     if 'dictionary_base_path' in params:
         params['dictionary'] = True
