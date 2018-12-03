@@ -96,7 +96,7 @@ class BiLSTM_CRF(chainer.Chain):
         if self.char_dim is None:
             return
 
-        logger.debug('Use word level encoder')
+        logger.debug('Use character level encoder')
         self.embed_char = L.EmbedID(self.n_char_vocab, self.char_dim)
         self.internal_hidden_dim += 2*self.char_hidden_dim
 
