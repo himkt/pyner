@@ -19,11 +19,6 @@ def load_sentences(file):
     return sentences
 
 
-def _lower(ws):
-    ws = [w if w in SPECIAL_SYMBOLS else w.lower() for w in ws]
-    return ws
-
-
 def _replace_zero(ws):
     ws = [re.sub(r'\d', '0', w) for w in ws]
     return ws
@@ -56,7 +51,6 @@ class Vocabulary:
 
         if self.lower:
             logger.debug('Lowercase')
-            vocab = _lower(vocab)
 
         return vocab
 
@@ -128,8 +122,6 @@ class Vocabulary:
 
                 if self.replace_zero:
                     words = _replace_zero(words)
-                if self.lower:
-                    words = _lower(words)
 
                 sentences.append(words)
         return sentences
