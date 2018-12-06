@@ -57,7 +57,7 @@ class BiLSTM_CRF(chainer.Chain):
 
         # feature extractor (BiLSTM)
         self.internal_hidden_dim = 0
-        self.feature_dropout = 0.5  # same as Lample
+        self.dropout_rate = params.get('dropout', 0)
 
         # param initializer
         # approx: https://github.com/glample/tagger/blob/master/utils.py#L44
