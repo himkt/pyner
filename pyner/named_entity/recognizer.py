@@ -29,7 +29,6 @@ class BiLSTM_CRF(chainer.Chain):
         self.char_dim = params.get('char_dim')
         self.char_hidden_dim = params.get('char_hidden_dim')
         self.n_char_hidden_layer = 1
-        self.char_hidden_dropout = 0
         self.classifier = params.get('word_classifier')
 
         # additional features (dictionary)
@@ -47,7 +46,6 @@ class BiLSTM_CRF(chainer.Chain):
         self.word_hidden_dim = params.get('word_hidden_dim')
         self.n_tag_vocab = params.get('n_tag_vocab')
         self.n_word_hidden_layer = 1  # same as Lample
-        self.word_hidden_dropout = 0
 
         # transformer
         self.linear_input_dim = 0
@@ -103,7 +101,7 @@ class BiLSTM_CRF(chainer.Chain):
         self.char_level_bilstm = L.NStepBiLSTM(self.n_char_hidden_layer,
                                                self.char_dim,
                                                self.char_hidden_dim,
-                                               self.char_hidden_dropout)
+                                               self.dropout_rate)
 
     def _setup_feature_extractor(self):
         # ref: https://github.com/glample/tagger/blob/master/model.py#L256
@@ -113,7 +111,7 @@ class BiLSTM_CRF(chainer.Chain):
         self.word_level_bilstm = L.NStepBiLSTM(self.n_word_hidden_layer,
                                                self.internal_hidden_dim,
                                                self.word_hidden_dim,
-                                               self.word_hidden_dropout)
+                                               self.dropout_rate)
         self.linear = L.Linear(self.linear_input_dim, self.n_tag_vocab)
 
     def _setup_decoder(self):
@@ -191,7 +189,7 @@ class BiLSTM_CRF(chainer.Chain):
                 lstm_input.append(char_repr)
 
             lstm_input = F.concat(lstm_input, axis=1)
-            lstm_input = F.dropout(lstm_input, self.feature_dropout)
+            lstm_input = F.dropout(lstm_input, self.dropout_rate)
             lstm_inputs.append(lstm_input)
 
         batch_size = len(batch[0])
