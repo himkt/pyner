@@ -1,4 +1,4 @@
-from pyner.initializer import XavierInitializer
+from pyner.initializer import LampleUniform
 from chainer import reporter
 
 import chainer.functions as F
@@ -61,7 +61,7 @@ class BiLSTM_CRF(chainer.Chain):
         # approx: https://github.com/glample/tagger/blob/master/utils.py#L44
         # this is same as Xavier initialization
         # see also He initialization
-        self.initializer = XavierInitializer()
+        self.initializer = LampleUniform()
 
         # setup links with given params
         with self.init_scope():
@@ -69,10 +69,6 @@ class BiLSTM_CRF(chainer.Chain):
             self._setup_char_encoder()
             self._setup_feature_extractor()
             self._setup_decoder()
-
-        logger.debug(f'Dropout rate: {self.dropout_rate}')
-        logger.debug(f'Dim of word embeddings: {self.word_dim}')
-        logger.debug(f'Dim of character embeddings: {self.char_dim}')
 
     def create_init_state(self, shape):
         h_0_data = self.xp.zeros(shape)
@@ -116,11 +112,9 @@ class BiLSTM_CRF(chainer.Chain):
                                                self.internal_hidden_dim,
                                                self.word_hidden_dim,
                                                self.dropout_rate)
-        self.linear = L.Linear(self.linear_input_dim, self.n_tag_vocab,
-                               initialW=self.initializer)
+        self.linear = L.Linear(self.linear_input_dim, self.n_tag_vocab)
 
     def _setup_decoder(self):
-        # TODO add custom initalizer to chainer.links.CRF1d
         self.crf = L.CRF1d(self.n_tag_vocab)
 
     def __call__(self, inputs, outputs, **kwargs):
