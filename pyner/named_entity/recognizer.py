@@ -121,7 +121,7 @@ class BiLSTM_CRF(chainer.Chain):
 
     def _setup_decoder(self):
         # TODO add custom initalizer to chainer.links.CRF1d
-        self.crf = L.CRF1d(self.n_tag_vocab)
+        self.crf = L.CRF1d(self.n_tag_vocab, initialW=self.initializer)
 
     def __call__(self, inputs, outputs, **kwargs):
         features = self.__extract__(inputs, **kwargs)
