@@ -3,27 +3,28 @@ export TAG='himkt/pyner:latest'
 export PWD=`pwd`
 export USERID=`id -u`
 export USERGROUPID=`id -g`
-export SUDO='sudo'
+
 
 .PHONY: build start test lint
 
 build:
-	$(SUDO) $(DOCKER) build -t $(TAG) . \
+	sudo build -t $(TAG) . \
 		--build-arg UID=$(USERID) \
-		--file=docker/Dockerfile.rootless
+		--file=docker/Dockerfile
 
 start:
-	$(SUDO) $(DOCKER) run -it \
-		--volume $(PWD):/docker \
-		--user $(USERID):$(USERGROUPID) $(TAG)
+	sudo $(DOCKER) run -it \
+		--volume $(PWD):/docker
 
 build_rootless:
 	$(DOCKER) build -t $(TAG) . \
-		--file=docker/Dockerfile
+		--build-arg UID=$(USERID) \
+		--file=docker/Dockerfile.rootless
 
 start_rootless:
 	$(DOCKER) run -it \
-		--volume $(PWD):/docker $(TAG)
+		--volume $(PWD):/docker \
+		--user $(USERID):$(USERGROUPID) $(TAG)
 
 test:
 	python -m unittest discover
