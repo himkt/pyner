@@ -28,13 +28,14 @@ RUN apt-get update && \
     apt-get update && \
     apt-get install -y tmux-xpanes
 
+RUN pip3 install pip --upgrade
+RUN pip3 install setuptools --upgrade
+
 COPY requirements.txt /tmp/requirements.txt
-RUN pip3 install -r /tmp/requirements.txt
+RUN pip3 install -r /tmp/requirements.txt -U
 
 COPY requirements_gpu.txt /tmp/requirements_gpu.txt
-RUN pip3 install -r /tmp/requirements_gpu.txt
-
-RUN pip3 install -U git+https://github.com/himkt/chainer.git@add-permutate-in-crf1d
+RUN pip3 install -r /tmp/requirements_gpu.txt -U
 
 RUN curl https://www.clips.uantwerpen.be/conll2000/chunking/conlleval.txt > /tmp/conlleval
 RUN chmod 777 /tmp/conlleval

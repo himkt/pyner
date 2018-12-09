@@ -1,20 +1,13 @@
-awscli
-click
-matplotlib
-jupyter
-notebook
-Sphinx
-flake8
+pyyaml
+
 numpy
-python-crfsuite
-tabulate
-akagi
-scikit-learn==0.19
 gensim
 seqeval
-chainerui
+scikit-learn==0.19
 
-# corpus parser
-git+https://github.com/attardi/wikiextractor
-kytea
-natto-py
+jupyter
+notebook
+
+# chainer
+git+https://github.com/himkt/chainer.git@add-permutate-in-crf1d
+chainerui
