@@ -5,6 +5,8 @@ import chainer.functions as F
 import chainer.links as L
 import chainer
 import logging
+import gensim
+import numpy
 
 
 logger = logging.getLogger(__name__)
@@ -15,14 +17,16 @@ class BiLSTM_CRF(chainer.Chain):
     BiLSTM-CRF: Bidirectional LSTM + Conditional Random Field as a decoder
     """
     # manage with dictionary
-    def __init__(self, params, word_vectors=None, label_matrix=None):
+    def __init__(self, params, word2idx=None, label_matrix=None):
         super(BiLSTM_CRF, self).__init__()
 
         # word encoder
         self.n_word_vocab = params.get('n_word_vocab')
         self.word_dim = params.get('word_dim')
         self.word_hidden_dim = params.get('word_hidden_dim')
-        self.word_vectors = word_vectors
+        self.initialW_embedf = params.get('word_vector')
+        self.lower = params.get('lower')
+        self.word2idx = word2idx
 
         # char encoder
         self.n_char_vocab = params.get('n_char_vocab')
@@ -63,6 +67,9 @@ class BiLSTM_CRF(chainer.Chain):
         # see also He initialization
         self.initializer = XavierInitializer()
 
+        # init word vectors
+        self._initialize_word_embeddings()
+
         # setup links with given params
         with self.init_scope():
             self._setup_word_encoder()
@@ -85,6 +92,47 @@ class BiLSTM_CRF(chainer.Chain):
         c_0 = chainer.Variable(c_0_data)
         return h_0, c_0
 
+    def _initialize_word_embeddings(self):
+        if self.initialW_embedf is None:
+            shape = [self.n_word_vocab, self.word_dim]
+            initialW_embed = self.xp.zeros(shape)
+            self.initializer(initialW_embed)
+            self.initialW_embed = initialW_embed
+            logger.debug('Initialize embeddings randomly')
+            return
+
+        logger.debug(f'Initialize embeddings using {self.initialW_embedf}')
+        gensim_model = gensim.models.KeyedVectors.load(self.initialW_embedf)
+        word_dim = gensim_model.wv.vector_size
+
+        n_word_vocab = len(self.word2idx)
+        shape = [n_word_vocab, word_dim]
+
+        # if lowercased word is in pre-trained embeddings,
+        # increment match2
+        match1, match2 = 0, 0
+
+        initialW_embed = numpy.zeros(shape)
+        self.initializer(initialW_embed)  # init
+
+        for word, idx in self.word2idx.items():
+            if word in gensim_model:
+                word_vector = gensim_model.wv.word_vec(word)
+                initialW_embed[idx, :] = word_vector
+                match1 += 1
+
+            elif self.lower and word.lower() in gensim_model:
+                word_vector = gensim_model.wv.word_vec(word.lower())
+                initialW_embed[idx, :] = word_vector
+                match2 += 1
+
+        match = match1 + match2
+        matching_rate = 100 * (match/n_word_vocab)
+        logger.info(f'Found {matching_rate:.2f}% words in pre-trained vocab')
+        logger.info(f'- n_word_vocab: {n_word_vocab}')
+        logger.info(f'- match1: {match1}, match2: {match2}')
+        self.initialW_embed = initialW_embed
+
     def _setup_word_encoder(self):
         if self.word_dim is None:
             return
@@ -92,7 +140,7 @@ class BiLSTM_CRF(chainer.Chain):
         logger.debug('Use word level encoder')
         self.embed_word = L.EmbedID(self.n_word_vocab,
                                     self.word_dim,
-                                    initialW=self.word_vectors)
+                                    initialW=self.initialW_embed)
 
     def _setup_char_encoder(self):
         if self.char_dim is None:
