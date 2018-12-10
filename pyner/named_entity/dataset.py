@@ -55,7 +55,7 @@ class DatasetTransformer:
         return word_sentence, tag_sentence
 
 
-class NamedEntityDataset(D.DatasetMixin):
+class SequenceLabelingDataset(D.DatasetMixin):
     def __init__(self, vocab, params, attr, transform):
         data_path = Path(params['data_dir'])
         word_path = data_path / f'{attr}.words.txt'
