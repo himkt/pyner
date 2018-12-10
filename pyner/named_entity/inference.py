@@ -1,6 +1,6 @@
 from pyner.named_entity.dataset import converter
 from pyner.named_entity.dataset import DatasetTransformer
-from pyner.named_entity.dataset import NamedEntityDataset
+from pyner.named_entity.dataset import SequenceLabelingDataset
 from pyner.named_entity.recognizer import BiLSTM_CRF
 from pyner.vocab import Vocabulary
 from pyner.util import parse_inference_args
@@ -49,7 +49,7 @@ if __name__ == '__main__':
     transformer = DatasetTransformer(vocab)
     transform = transformer.transform
 
-    test_dataset = NamedEntityDataset(vocab, params, 'test', transform)
+    test_dataset = SequenceLabelingDataset(vocab, params, 'test', transform)
     test_iterator = It.SerialIterator(test_dataset,
                                       batch_size=len(test_dataset),
                                       shuffle=False,
