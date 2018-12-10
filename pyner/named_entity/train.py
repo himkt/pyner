@@ -3,8 +3,8 @@ from pyner.extension import LearningRateDecay
 from pyner.vocab import Vocabulary
 from pyner.named_entity.dataset import converter
 from pyner.named_entity.dataset import DatasetTransformer
-from pyner.named_entity.dataset import NamedEntityDataset
-from pyner.named_entity.evaluator import SequenceLabelingEvaluator
+from pyner.named_entity.dataset import SequenceLabelingDataset
+from pyner.named_entity.evaluator import NamedEntityEvaluator
 from pyner.named_entity.recognizer import BiLSTM_CRF
 from pyner.util import add_hooks
 from pyner.util import set_seed
@@ -69,9 +69,9 @@ if __name__ == '__main__':
     transformer = DatasetTransformer(vocab)
     transform = transformer.transform
 
-    train_dataset = NamedEntityDataset(vocab, params, 'train', transform)
-    valid_dataset = NamedEntityDataset(vocab, params, 'validation', transform)
-    test_dataset = NamedEntityDataset(vocab, params, 'test', transform)
+    train_dataset = SequenceLabelingDataset(vocab, params, 'train', transform)
+    valid_dataset = SequenceLabelingDataset(vocab, params, 'validation', transform)
+    test_dataset = SequenceLabelingDataset(vocab, params, 'test', transform)
 
     train_iterator = It.SerialIterator(train_dataset,
                                        batch_size=params['batch_size'],
@@ -105,11 +105,11 @@ if __name__ == '__main__':
                'validation_1/main/loss',
                'validation_1/main/fscore']
 
-    valid_evaluator = SequenceLabelingEvaluator(valid_iterator, model,
+    valid_evaluator = NamedEntityEvaluator(valid_iterator, model,
                                                 transformer.itransform,
                                                 converter, device=args.device)
 
-    test_evaluator = SequenceLabelingEvaluator(test_iterator, model,
+    test_evaluator = NamedEntityEvaluator(test_iterator, model,
                                                transformer.itransform,
                                                converter, device=args.device)
 
