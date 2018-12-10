@@ -6,12 +6,12 @@ from seqeval import metrics
 import copy
 
 
-class SequenceLabelingEvaluator(Evaluator):
+class NamedEntityEvaluator(Evaluator):
 
     def __init__(self, iterator, target,
                  transform_func, converter, device=-1):
 
-        super(SequenceLabelingEvaluator, self). \
+        super(NamedEntityEvaluator, self). \
             __init__(iterator, target, converter, device)
 
         self.transform_func = transform_func
