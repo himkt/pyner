@@ -34,7 +34,7 @@ if __name__ == '__main__':
     snapshot_file, prediction_path = select_snapshot(args, model_dir)
     logger.debug(f'creat prediction into {prediction_path}')
 
-    model = BiLSTM_CRF(params)
+    model = BiLSTM_CRF(params, vocab.dictionaries['word2idx'])
     model_path = model_dir / snapshot_file
     logger.debug(f'load {snapshot_file}')
     chainer.serializers.load_npz(model_path.as_posix(), model)

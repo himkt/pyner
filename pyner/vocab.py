@@ -26,16 +26,8 @@ class Vocabulary:
     def __init__(self, params):
         self.__name__ = 'Vocabulary'
 
-        # use self.replace_zero in Dataset
-        if 'replace_zero' not in params:
-            self.replace_zero = False
-        else:
-            self.replace_zero = params['replace_zero']
-
-        if 'lower' not in params:
-            self.lower = False
-        else:
-            self.lower = params['lower']
+        self.replace_zero = params.get('replace_zero', False)
+        self.lower = params.get('lower', False)
 
         self.params = params
         self.data_path = Path(params['data_dir'])
