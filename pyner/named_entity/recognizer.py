@@ -1,4 +1,4 @@
-from pyner.initializer import XavierInitializer
+from chainer import initializers
 from chainer import reporter
 
 import chainer.functions as F
@@ -63,9 +63,7 @@ class BiLSTM_CRF(chainer.Chain):
 
         # param initializer
         # approx: https://github.com/glample/tagger/blob/master/utils.py#L44
-        # this is same as Xavier initialization
-        # see also He initialization
-        self.initializer = XavierInitializer()
+        self.initializer = initializers.GlorotUniform()
 
         # init word vectors
         self._initialize_word_embeddings()
