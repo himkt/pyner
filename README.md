@@ -1,6 +1,6 @@
 <div align="center"><img src="./static/image/pyner.png" width="800"/></div>
 
-# PyNER: Extensible Implementation for Neural Named Entity Recognizer
+# PyNER: Extensible Implementation of Neural Named Entity Recognizer
 PyNER is a chainer implementation for neural named entity recognizer.
 It is designed so that users can define arbitrary module (e.g. LSTM, CNN, ...).
 PyNER also provides Dataset class and Evaluator class suited to sequence labeling tasks.
