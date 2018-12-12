@@ -33,3 +33,5 @@ dist
 /script/conlleval
 
 /cover
+
+/tool/conlleval
