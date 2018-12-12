@@ -1,10 +1,12 @@
-from pyner.initializer import LampleUniform
+from chainer import initializers
 from chainer import reporter
 
 import chainer.functions as F
 import chainer.links as L
 import chainer
 import logging
+import gensim
+import numpy
 
 
 logger = logging.getLogger(__name__)
@@ -15,21 +17,22 @@ class BiLSTM_CRF(chainer.Chain):
     BiLSTM-CRF: Bidirectional LSTM + Conditional Random Field as a decoder
     """
     # manage with dictionary
-    def __init__(self, params, word_vectors=None, label_matrix=None):
+    def __init__(self, params, word2idx=None, label_matrix=None):
         super(BiLSTM_CRF, self).__init__()
 
         # word encoder
         self.n_word_vocab = params.get('n_word_vocab')
         self.word_dim = params.get('word_dim')
         self.word_hidden_dim = params.get('word_hidden_dim')
-        self.word_vectors = word_vectors
+        self.initialW_embedf = params.get('word_vector')
+        self.lower = params.get('lower')
+        self.word2idx = word2idx
 
         # char encoder
         self.n_char_vocab = params.get('n_char_vocab')
         self.char_dim = params.get('char_dim')
         self.char_hidden_dim = params.get('char_hidden_dim')
         self.n_char_hidden_layer = 1
-        self.char_hidden_dropout = 0
         self.classifier = params.get('word_classifier')
 
         # additional features (dictionary)
@@ -47,7 +50,6 @@ class BiLSTM_CRF(chainer.Chain):
         self.word_hidden_dim = params.get('word_hidden_dim')
         self.n_tag_vocab = params.get('n_tag_vocab')
         self.n_word_hidden_layer = 1  # same as Lample
-        self.word_hidden_dropout = 0
 
         # transformer
         self.linear_input_dim = 0
@@ -57,13 +59,14 @@ class BiLSTM_CRF(chainer.Chain):
 
         # feature extractor (BiLSTM)
         self.internal_hidden_dim = 0
-        self.feature_dropout = 0.5  # same as Lample
+        self.dropout_rate = params.get('dropout', 0)
 
         # param initializer
         # approx: https://github.com/glample/tagger/blob/master/utils.py#L44
-        # this is same as Xavier initialization
-        # see also He initialization
-        self.initializer = LampleUniform()
+        self.initializer = initializers.GlorotUniform()
+
+        # init word vectors
+        self._initialize_word_embeddings()
 
         # setup links with given params
         with self.init_scope():
@@ -71,6 +74,10 @@ class BiLSTM_CRF(chainer.Chain):
             self._setup_char_encoder()
             self._setup_feature_extractor()
             self._setup_decoder()
+
+        logger.debug(f'Dropout rate: {self.dropout_rate}')
+        logger.debug(f'Dim of word embeddings: {self.word_dim}')
+        logger.debug(f'Dim of character embeddings: {self.char_dim}')
 
     def create_init_state(self, shape):
         h_0_data = self.xp.zeros(shape)
@@ -83,6 +90,47 @@ class BiLSTM_CRF(chainer.Chain):
         c_0 = chainer.Variable(c_0_data)
         return h_0, c_0
 
+    def _initialize_word_embeddings(self):
+        if self.initialW_embedf is None:
+            shape = [self.n_word_vocab, self.word_dim]
+            initialW_embed = self.xp.zeros(shape)
+            self.initializer(initialW_embed)
+            self.initialW_embed = initialW_embed
+            logger.debug('Initialize embeddings randomly')
+            return
+
+        logger.debug(f'Initialize embeddings using {self.initialW_embedf}')
+        gensim_model = gensim.models.KeyedVectors.load(self.initialW_embedf)
+        word_dim = gensim_model.wv.vector_size
+
+        n_word_vocab = len(self.word2idx)
+        shape = [n_word_vocab, word_dim]
+
+        # if lowercased word is in pre-trained embeddings,
+        # increment match2
+        match1, match2 = 0, 0
+
+        initialW_embed = numpy.zeros(shape)
+        self.initializer(initialW_embed)  # init
+
+        for word, idx in self.word2idx.items():
+            if word in gensim_model:
+                word_vector = gensim_model.wv.word_vec(word)
+                initialW_embed[idx, :] = word_vector
+                match1 += 1
+
+            elif self.lower and word.lower() in gensim_model:
+                word_vector = gensim_model.wv.word_vec(word.lower())
+                initialW_embed[idx, :] = word_vector
+                match2 += 1
+
+        match = match1 + match2
+        matching_rate = 100 * (match/n_word_vocab)
+        logger.info(f'Found {matching_rate:.2f}% words in pre-trained vocab')
+        logger.info(f'- n_word_vocab: {n_word_vocab}')
+        logger.info(f'- match1: {match1}, match2: {match2}')
+        self.initialW_embed = initialW_embed
+
     def _setup_word_encoder(self):
         if self.word_dim is None:
             return
@@ -90,7 +138,7 @@ class BiLSTM_CRF(chainer.Chain):
         logger.debug('Use word level encoder')
         self.embed_word = L.EmbedID(self.n_word_vocab,
                                     self.word_dim,
-                                    initialW=self.word_vectors)
+                                    initialW=self.initialW_embed)
 
     def _setup_char_encoder(self):
         if self.char_dim is None:
@@ -103,7 +151,7 @@ class BiLSTM_CRF(chainer.Chain):
         self.char_level_bilstm = L.NStepBiLSTM(self.n_char_hidden_layer,
                                                self.char_dim,
                                                self.char_hidden_dim,
-                                               self.char_hidden_dropout)
+                                               self.dropout_rate)
 
     def _setup_feature_extractor(self):
         # ref: https://github.com/glample/tagger/blob/master/model.py#L256
@@ -113,11 +161,12 @@ class BiLSTM_CRF(chainer.Chain):
         self.word_level_bilstm = L.NStepBiLSTM(self.n_word_hidden_layer,
                                                self.internal_hidden_dim,
                                                self.word_hidden_dim,
-                                               self.word_hidden_dropout)
-        self.linear = L.Linear(self.linear_input_dim, self.n_tag_vocab)
+                                               self.dropout_rate)
+        self.linear = L.Linear(self.linear_input_dim, self.n_tag_vocab,
+                               initialW=self.initializer)
 
     def _setup_decoder(self):
-        self.crf = L.CRF1d(self.n_tag_vocab)
+        self.crf = L.CRF1d(self.n_tag_vocab, initialW=self.initializer)
 
     def __call__(self, inputs, outputs, **kwargs):
         features = self.__extract__(inputs, **kwargs)
@@ -191,7 +240,7 @@ class BiLSTM_CRF(chainer.Chain):
                 lstm_input.append(char_repr)
 
             lstm_input = F.concat(lstm_input, axis=1)
-            lstm_input = F.dropout(lstm_input, self.feature_dropout)
+            lstm_input = F.dropout(lstm_input, self.dropout_rate)
             lstm_inputs.append(lstm_input)
 
         batch_size = len(batch[0])

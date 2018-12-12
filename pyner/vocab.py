@@ -1,8 +1,6 @@
 from pathlib import Path
 
 import logging
-import gensim
-import numpy
 import re
 
 
@@ -28,16 +26,8 @@ class Vocabulary:
     def __init__(self, params):
         self.__name__ = 'Vocabulary'
 
-        # use self.replace_zero in Dataset
-        if 'replace_zero' not in params:
-            self.replace_zero = False
-        else:
-            self.replace_zero = params['replace_zero']
-
-        if 'lower' not in params:
-            self.lower = False
-        else:
-            self.lower = params['lower']
+        self.replace_zero = params.get('replace_zero', False)
+        self.lower = params.get('lower', False)
 
         self.params = params
         self.data_path = Path(params['data_dir'])
@@ -133,34 +123,3 @@ class Vocabulary:
                 line = line.rstrip('\n')
                 sentences.append(line.split(' '))
         return sentences
-
-    def load_pretrained_word_vector(self, word2idx, word_vector):
-        gensim_model = gensim.models.KeyedVectors.load(word_vector)
-        word_dim = gensim_model.wv.vector_size
-
-        n_word_vocab = len(word2idx)
-        scale = numpy.sqrt(3.0 / word_dim)
-        shape = [n_word_vocab, word_dim]
-
-        # if lowercased word is in pre-trained embeddings,
-        # increment match2
-        match1, match2 = 0, 0
-
-        word_vectors = numpy.random.uniform(-scale, scale, shape)
-        for word, idx in word2idx.items():
-            if word in gensim_model:
-                word_vector = gensim_model.wv.word_vec(word)
-                word_vectors[idx, :] = word_vector
-                match1 += 1
-
-            elif self.lower and word.lower() in gensim_model:
-                word_vector = gensim_model.wv.word_vec(word.lower())
-                word_vectors[idx, :] = word_vector
-                match2 += 1
-
-        match = match1 + match2
-        matching_rate = 100 * (match/n_word_vocab)
-        logger.info(f'Found {matching_rate:.2f}% words in pre-trained vocab')
-        logger.info(f'- n_word_vocab: {n_word_vocab}')
-        logger.info(f'- match1: {match1}, match2: {match2}')
-        return word_vectors

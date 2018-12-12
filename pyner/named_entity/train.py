@@ -44,14 +44,13 @@ if __name__ == '__main__':
     params['n_word_vocab'] = max(vocab.dictionaries['word2idx'].values()) + 1
     params['n_char_vocab'] = max(vocab.dictionaries['char2idx'].values()) + 1
     params['n_tag_vocab'] = max(vocab.dictionaries['tag2idx'].values()) + 1
+    params['lower'] = vocab.lower
 
-    word_vectors = None
+    word2idx = None
     label_matrix = None
 
     if 'word_vector' in params:
         word2idx = vocab.dictionaries['word2idx']
-        word_vector = params['word_vector']
-        word_vectors = vocab.load_pretrained_word_vector(word2idx, word_vector)
 
     if 'dictionary_base_path' in params:
         params['dictionary'] = True
@@ -61,8 +60,7 @@ if __name__ == '__main__':
         _, n_label_vocab = label_matrix.shape
         params['n_label_vocab'] = n_label_vocab
 
-    model = BiLSTM_CRF(params, word_vectors, label_matrix)
-
+    model = BiLSTM_CRF(params, word2idx, label_matrix)
     if args.device >= 0:
         model.to_gpu(args.device)
 
@@ -70,7 +68,7 @@ if __name__ == '__main__':
     transform = transformer.transform
 
     train_dataset = SequenceLabelingDataset(vocab, params, 'train', transform)
-    valid_dataset = SequenceLabelingDataset(vocab, params, 'validation', transform)
+    valid_dataset = SequenceLabelingDataset(vocab, params, 'validation', transform)  # NOQA
     test_dataset = SequenceLabelingDataset(vocab, params, 'test', transform)
 
     train_iterator = It.SerialIterator(train_dataset,
