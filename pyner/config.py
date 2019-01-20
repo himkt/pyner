@@ -21,3 +21,6 @@ class ConfigParser:
 
     def __call__(self):
         return self.config_dict.keys()
+
+    def export(self):
+        return self.config_dict

@@ -6,10 +6,10 @@ from pyner.named_entity.dataset import DatasetTransformer
 from pyner.named_entity.dataset import SequenceLabelingDataset
 from pyner.named_entity.evaluator import NamedEntityEvaluator
 from pyner.named_entity.recognizer import BiLSTM_CRF
-from pyner.util import add_hooks
-from pyner.util import set_seed
-from pyner.util import create_optimizer
-from pyner.util import parse_train_args
+from pyner.util.argparse import parse_train_args
+from pyner.util.deterministic import set_seed
+from pyner.util.optimizer import create_optimizer
+from pyner.util.optimizer import add_hooks
 
 from chainerui.utils import save_args
 from pathlib import Path
@@ -67,6 +67,20 @@ def prepare_pretrained_word_vector(
     return syn0
 
 
+def create_iterator(vocab, external_config, batch_config, role, transform):
+    dataset = SequenceLabelingDataset(vocab, external_config, role, transform)
+    shuffle = True if role == 'train' else False
+    repeat = True if role == 'train' else False
+    batch_size = batch_config['batch_size'] if role == 'train' else len(dataset)
+    iterator = It.SerialIterator(
+        dataset,
+        batch_size=batch_size,
+        repeat=repeat,
+        shuffle=shuffle
+    )
+    return iterator
+
+
 if __name__ == '__main__':
     logger = logging.getLogger(__name__)
     fmt = '%(asctime)s : %(threadName)s : %(levelname)s : %(message)s'
@@ -81,6 +95,11 @@ if __name__ == '__main__':
 
     config_parser = ConfigParser(args.config)
     config_path = Path(args.config)
+
+    batch_config = config_parser['batch']
+    external_config = config_parser['external']
+    model_config = config_parser['model']
+    optimizer_config = config_parser['optimizer']
     model_path = Path(config_parser['output'])
 
     logger.debug(f'model_dir: {model_path}')
@@ -90,15 +109,13 @@ if __name__ == '__main__':
     num_char_vocab = max(vocab.dictionaries['char2idx'].values()) + 1
     num_tag_vocab = max(vocab.dictionaries['tag2idx'].values()) + 1
 
-    model = BiLSTM_CRF(config_parser['model'],
+    model = BiLSTM_CRF(model_config,
                        num_word_vocab,
                        num_char_vocab,
                        num_tag_vocab)
 
     transformer = DatasetTransformer(vocab)
     transform = transformer.transform
-
-    external_config = config_parser['external']
 
     if 'word_vector' in external_config:
         word2idx = vocab.dictionaries['word2idx']
@@ -109,29 +126,16 @@ if __name__ == '__main__':
         )
         model.set_pretrained_word_vectors(syn0)
 
-    train_dataset = SequenceLabelingDataset(vocab, external_config, 'train', transform)
-    valid_dataset = SequenceLabelingDataset(vocab, external_config, 'validation', transform)  # NOQA
-    test_dataset = SequenceLabelingDataset(vocab, external_config, 'test', transform)
-
-    batch_config = config_parser['batch']
-    train_iterator = It.SerialIterator(train_dataset,
-                                       batch_size=batch_config['batch_size'],
-                                       shuffle=True)
-
-    valid_iterator = It.SerialIterator(valid_dataset,
-                                       batch_size=len(valid_dataset),
-                                       shuffle=False,
-                                       repeat=False)
-
-    test_iterator = It.SerialIterator(test_dataset,
-                                      batch_size=len(test_dataset),
-                                      shuffle=False,
-                                      repeat=False)
+    train_iterator = create_iterator(vocab, external_config,
+                                     batch_config, 'train', transform)
+    valid_iterator = create_iterator(vocab, external_config,
+                                     batch_config, 'validation', transform)
+    test_iterator = create_iterator(vocab, external_config,
+                                    batch_config, 'test', transform)
 
     if args.device >= 0:
         model.to_gpu(args.device)
 
-    optimizer_config = config_parser['optimizer']
     optimizer = create_optimizer(optimizer_config)
     optimizer.setup(model)
     optimizer = add_hooks(optimizer, params)
@@ -140,9 +144,20 @@ if __name__ == '__main__':
                                 converter=converter,
                                 device=args.device)
 
-    # save_args(params, model_path)
-    trainer = T.Trainer(updater, (batch_config['epoch'], 'epoch'), out=model_path)
+    params = config_parser.export()
+    params['num_word_vocab'] = num_word_vocab
+    params['num_char_vocab'] = num_char_vocab
+    params['num_tag_vocab'] = num_tag_vocab
+    save_args(params, model_path)
+
     logger.debug(f'Create {model_path} for trainer\'s output')
+    trigger = (batch_config['epoch'], 'epoch')
+
+    trainer = T.Trainer(
+        updater,
+        trigger,
+        out=model_path
+    )
 
     entries = ['epoch', 'iteration', 'elapsed_time', 'lr',
                'main/loss', 'validation/main/loss',
@@ -151,12 +166,12 @@ if __name__ == '__main__':
                'validation_1/main/fscore']
 
     valid_evaluator = NamedEntityEvaluator(valid_iterator, model,
-                                                transformer.itransform,
-                                                converter, device=args.device)
+                                           transformer.itransform,
+                                           converter, device=args.device)
 
     test_evaluator = NamedEntityEvaluator(test_iterator, model,
-                                               transformer.itransform,
-                                               converter, device=args.device)
+                                          transformer.itransform,
+                                          converter, device=args.device)
 
     epoch_trigger = (1, 'epoch')
     snapshot_filename = 'snapshot_epoch_{.updater.epoch:04d}'
