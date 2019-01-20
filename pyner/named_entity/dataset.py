@@ -1,9 +1,23 @@
-from pyner.util import update_instances
 from pathlib import Path
 
 import chainer.dataset as D
 import chainer.cuda
+import logging
 import numpy as np
+
+
+logger = logging.getLogger(__name__)
+
+
+def update_instances(train_datas, params):
+    train_size = params.get('train_size', 1.0)
+    if train_size <= 0 or 1 <= train_size:
+        assert Exception('train_size must be in (0, 1]')
+    n_train = len(train_datas[0])
+    instances = int(train_size * n_train)
+    rate = 100 * train_size
+    logger.debug(f'Use {instances} example for training ({rate:.2f}%)')
+    return [t[:instances] for t in train_datas]
 
 
 def converter(batch, device=-1):
