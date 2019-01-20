@@ -36,8 +36,8 @@ install:
 	python3.6 setup.py install --user
 
 conll:
-	cd ./tool && curl https://www.clips.uantwerpen.be/conll2000/chunking/conlleval.txt > conlleval
-	cd ./tool && chmod 777 conlleval
+	cd ./pyner/tool && curl https://www.clips.uantwerpen.be/conll2000/chunking/conlleval.txt > conlleval
+	cd ./pyner/tool && chmod 777 conlleval
 
 tmux:
 	tmux -f .dotfiles/.tmux.conf
