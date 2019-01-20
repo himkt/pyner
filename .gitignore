@@ -35,3 +35,6 @@ dist
 /cover
 
 /tool/conlleval
+
+/model
+/model.*
