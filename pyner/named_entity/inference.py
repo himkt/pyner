@@ -2,9 +2,9 @@ from pyner.named_entity.dataset import converter
 from pyner.named_entity.dataset import DatasetTransformer
 from pyner.named_entity.dataset import SequenceLabelingDataset
 from pyner.named_entity.recognizer import BiLSTM_CRF
-from pyner.vocab import Vocabulary
 from pyner.util.argparse import parse_inference_args
 from pyner.util.deterministic import set_seed
+from pyner.util.vocab import Vocabulary
 from pyner.util.metric import select_snapshot
 
 import chainer.iterators as It
