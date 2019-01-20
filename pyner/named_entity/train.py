@@ -1,5 +1,4 @@
 from pyner.config import ConfigParser
-from pyner.extension import LearningRateDecay
 from pyner.vocab import Vocabulary
 from pyner.named_entity.dataset import converter
 from pyner.named_entity.dataset import DatasetTransformer
@@ -10,6 +9,7 @@ from pyner.util.argparse import parse_train_args
 from pyner.util.deterministic import set_seed
 from pyner.util.optimizer import create_optimizer
 from pyner.util.optimizer import add_hooks
+from pyner.util.optimizer import LearningRateDecay
 
 from chainerui.utils import save_args
 from pathlib import Path
