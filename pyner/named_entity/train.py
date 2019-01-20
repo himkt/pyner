@@ -1,4 +1,4 @@
-from pyner.dict import Dictionary
+from pyner.config import ConfigParser
 from pyner.extension import LearningRateDecay
 from pyner.vocab import Vocabulary
 from pyner.named_entity.dataset import converter
@@ -23,6 +23,50 @@ import logging
 import yaml
 
 
+def prepare_pretrained_word_vector(
+        word2idx,
+        word_vector_path,
+        syn0_original,
+        lowercase=False
+):
+
+    import gensim
+    import numpy
+
+    num_word_vocab, word_dim = syn0_original.shape
+    word_vector_gensim = gensim.models.KeyedVectors.load(
+        word_vector_path
+    )
+    syn0 = numpy.zeros(
+        [num_word_vocab, word_dim],
+        dtype=numpy.float32
+    )
+
+    assert word_vector_gensim.wv.vector_size == word_dim
+
+    # if lowercased word is in pre-trained embeddings,
+    # increment match2
+    match1, match2 = 0, 0
+
+    for word, idx in word2idx.items():
+        if word in word_vector_gensim:
+            word_vector = word_vector_gensim.wv.word_vec(word)
+            syn0[idx, :] = word_vector
+            match1 += 1
+
+        elif lowercase and word.lower() in word_vector_gensim:
+            word_vector = word_vector_gensim.wv.word_vec(word.lower())
+            syn0[idx, :] = word_vector
+            match2 += 1
+
+    match = match1 + match2
+    matching_rate = 100 * (match/num_word_vocab)
+    logger.info(f'Found {matching_rate:.2f}% words in pre-trained vocab')
+    logger.info(f'- num_word_vocab: {num_word_vocab}')
+    logger.info(f'- match1: {match1}, match2: {match2}')
+    return syn0
+
+
 if __name__ == '__main__':
     logger = logging.getLogger(__name__)
     fmt = '%(asctime)s : %(threadName)s : %(levelname)s : %(message)s'
@@ -35,44 +79,43 @@ if __name__ == '__main__':
         chainer.cuda.get_device(args.device).use()
     set_seed(args.seed, args.device)
 
+    config_parser = ConfigParser(args.config)
     config_path = Path(args.config)
-    model_path = Path(args.config.replace('config', 'model', 1))
+    model_path = Path(config_parser['output'])
 
     logger.debug(f'model_dir: {model_path}')
-    vocab = Vocabulary.prepare(params)
+    vocab = Vocabulary.prepare(config_parser['external'])
 
-    params['n_word_vocab'] = max(vocab.dictionaries['word2idx'].values()) + 1
-    params['n_char_vocab'] = max(vocab.dictionaries['char2idx'].values()) + 1
-    params['n_tag_vocab'] = max(vocab.dictionaries['tag2idx'].values()) + 1
-    params['lower'] = vocab.lower
+    num_word_vocab = max(vocab.dictionaries['word2idx'].values()) + 1
+    num_char_vocab = max(vocab.dictionaries['char2idx'].values()) + 1
+    num_tag_vocab = max(vocab.dictionaries['tag2idx'].values()) + 1
 
-    word2idx = None
-    label_matrix = None
-
-    if 'word_vector' in params:
-        word2idx = vocab.dictionaries['word2idx']
-
-    if 'dictionary_base_path' in params:
-        params['dictionary'] = True
-        word2idx = vocab.dictionaries['word2idx']
-        dictionary = Dictionary.prepare(params, word2idx)
-        label_matrix = dictionary.build_dictionary_matrix()
-        _, n_label_vocab = label_matrix.shape
-        params['n_label_vocab'] = n_label_vocab
-
-    model = BiLSTM_CRF(params, word2idx, label_matrix)
-    if args.device >= 0:
-        model.to_gpu(args.device)
+    model = BiLSTM_CRF(config_parser['model'],
+                       num_word_vocab,
+                       num_char_vocab,
+                       num_tag_vocab)
 
     transformer = DatasetTransformer(vocab)
     transform = transformer.transform
 
-    train_dataset = SequenceLabelingDataset(vocab, params, 'train', transform)
-    valid_dataset = SequenceLabelingDataset(vocab, params, 'validation', transform)  # NOQA
-    test_dataset = SequenceLabelingDataset(vocab, params, 'test', transform)
+    external_config = config_parser['external']
 
+    if 'word_vector' in external_config:
+        word2idx = vocab.dictionaries['word2idx']
+        syn0 = prepare_pretrained_word_vector(
+            word2idx,
+            external_config['word_vector'],
+            model.embed_word.W.data
+        )
+        model.set_pretrained_word_vectors(syn0)
+
+    train_dataset = SequenceLabelingDataset(vocab, external_config, 'train', transform)
+    valid_dataset = SequenceLabelingDataset(vocab, external_config, 'validation', transform)  # NOQA
+    test_dataset = SequenceLabelingDataset(vocab, external_config, 'test', transform)
+
+    batch_config = config_parser['batch']
     train_iterator = It.SerialIterator(train_dataset,
-                                       batch_size=params['batch_size'],
+                                       batch_size=batch_config['batch_size'],
                                        shuffle=True)
 
     valid_iterator = It.SerialIterator(valid_dataset,
@@ -85,7 +128,11 @@ if __name__ == '__main__':
                                       shuffle=False,
                                       repeat=False)
 
-    optimizer = create_optimizer(params)
+    if args.device >= 0:
+        model.to_gpu(args.device)
+
+    optimizer_config = config_parser['optimizer']
+    optimizer = create_optimizer(optimizer_config)
     optimizer.setup(model)
     optimizer = add_hooks(optimizer, params)
 
@@ -93,8 +140,8 @@ if __name__ == '__main__':
                                 converter=converter,
                                 device=args.device)
 
-    save_args(params, model_path)
-    trainer = T.Trainer(updater, (params['epoch'], 'epoch'), out=model_path)
+    # save_args(params, model_path)
+    trainer = T.Trainer(updater, (batch_config['epoch'], 'epoch'), out=model_path)
     logger.debug(f'Create {model_path} for trainer\'s output')
 
     entries = ['epoch', 'iteration', 'elapsed_time', 'lr',
