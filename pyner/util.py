@@ -93,7 +93,7 @@ def prepare_op(metric):
         if le_metric in metric:
             return operator.le
 
-    raise NotImplemented
+    raise NotImplementedError
 
 
 def set_seed(seed=31, device=-1):
@@ -109,26 +109,27 @@ def set_seed(seed=31, device=-1):
     random.seed(seed)
 
 
-def create_optimizer(params):
+def create_optimizer(optimizer_config):
     """
-    :param params: dict, 学習のパラメータを含む辞書
+    :param optimizer_config: dict, 学習のパラメータを含む辞書
     """
 
-    optimizer_ = params['optimizer']
+    optimizer_ = optimizer_config['name']
     optimizer_ = optimizer_.lower()
 
     if optimizer_ == 'sgd':
-        optimizer = Opt.SGD(lr=params['learning_rate'])
+        optimizer = Opt.SGD(lr=optimizer_config['learning_rate'])
 
     elif optimizer_ == 'momentumsgd':
-        optimizer = Opt.MomentumSGD(lr=params['learning_rate'])
+        optimizer = Opt.MomentumSGD(lr=optimizer_config['learning_rate'])
 
     elif optimizer_ == 'adadelta':
         optimizer = Opt.AdaDelta()
 
     elif optimizer_ == 'adam':
-        optimizer = Opt.Adam(alpha=params['learning_rate'],
-                             beta1=0.9, beta2=0.9)
+        optimizer = Opt.Adam(alpha=optimizer_config['alpha'],
+                             beta1=optimizer_config['beta1'],
+                             beta2=optimizer_config['beta2'])
 
     else:
         raise Exception
