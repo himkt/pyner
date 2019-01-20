@@ -3,9 +3,9 @@ from pyner.named_entity.dataset import DatasetTransformer
 from pyner.named_entity.dataset import SequenceLabelingDataset
 from pyner.named_entity.recognizer import BiLSTM_CRF
 from pyner.vocab import Vocabulary
-from pyner.util import parse_inference_args
-from pyner.util import select_snapshot
-from pyner.util import set_seed
+from pyner.util.argparse import parse_inference_args
+from pyner.util.deterministic import set_seed
+from pyner.util.metric import select_snapshot
 
 import chainer.iterators as It
 import chainer
@@ -26,15 +26,23 @@ if __name__ == '__main__':
     set_seed()
 
     model_dir = pathlib.Path(args.model)
-    params = json.load(open(model_dir / 'args'))
+    configs = json.load(open(model_dir / 'args'))
+    external_config = configs['external']
+    model_config = configs['model']
+    batch_config = configs['batch']
 
-    vocab = Vocabulary.prepare(params)
+    vocab = Vocabulary.prepare(external_config)
     metric = args.metric.replace('/', '.')
 
     snapshot_file, prediction_path = select_snapshot(args, model_dir)
     logger.debug(f'creat prediction into {prediction_path}')
 
-    model = BiLSTM_CRF(params, vocab.dictionaries['word2idx'])
+    num_word_vocab = configs['num_word_vocab']
+    num_char_vocab = configs['num_char_vocab']
+    num_tag_vocab = configs['num_tag_vocab']
+    model = BiLSTM_CRF(model_config, num_word_vocab,
+                       num_char_vocab, num_tag_vocab)
+
     model_path = model_dir / snapshot_file
     logger.debug(f'load {snapshot_file}')
     chainer.serializers.load_npz(model_path.as_posix(), model)
@@ -42,14 +50,11 @@ if __name__ == '__main__':
     if args.device >= 0:
         model.to_gpu(args.device)
 
-    logger.debug('*** parameters ***')
-    for key, value in params.items():
-        logger.debug(f'{key}: {value}')
-
     transformer = DatasetTransformer(vocab)
     transform = transformer.transform
 
-    test_dataset = SequenceLabelingDataset(vocab, params, 'test', transform)
+    test_dataset = SequenceLabelingDataset(vocab, external_config,
+                                           'test', transform)
     test_iterator = It.SerialIterator(test_dataset,
                                       batch_size=len(test_dataset),
                                       shuffle=False,
