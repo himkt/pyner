@@ -2,6 +2,6 @@
 batch: "./config/batch/simple.yaml"
 external: "./config/external/conll_lample_strong.yaml"
 model: "./config/model/lample.yaml"
-optimizer: "./config/optimizer/adam.yaml"
+optimizer: "./config/optimizer/sgd.yaml"
 preprocessing: "./config/preprocessing/simple.yaml"
 output: "model/lample"
