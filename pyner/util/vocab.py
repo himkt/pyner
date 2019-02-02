@@ -47,13 +47,14 @@ class Vocabulary:
         self.dictionaries = {}
         self.vocab_arr = {}
 
+        logger.debug(f'Zero normalization: {self.replace_zero}')
+        logger.debug(f'Lowercase: {self.lower}')
+
     def _process(self, vocab):
         if self.replace_zero:
-            logger.debug('Replace digits with zero')
             vocab = _replace_zero(vocab)
 
         if self.lower:
-            logger.debug('Lowercase')
             vocab = _lowercase(vocab)
 
         return vocab
@@ -106,8 +107,7 @@ class Vocabulary:
             for line in file:
                 line = line.rstrip('\n')
                 words = line.split(' ')
-                if self.replace_zero:
-                    words = _replace_zero(words)
+                words = self._process(words)
                 sentences.append(words)
         return sentences
 
