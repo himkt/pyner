@@ -1,5 +1,5 @@
-from corpus.common import CorpusParser
-from corpus.common import enum
+from pyner.tool.corpus.common import CorpusParser
+from pyner.tool.corpus.common import enum
 
 import unittest
 
