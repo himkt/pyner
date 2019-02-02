@@ -1,5 +1,5 @@
-from corpus.tag_scheme import apply_transform
-from corpus.tag_scheme import get_word_format_func
+from .tag_scheme import apply_transform
+from .tag_scheme import get_word_format_func
 import re
 
 

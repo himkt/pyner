@@ -1,5 +1,5 @@
-from corpus.tag_scheme import bio2bioes
-from corpus.tag_scheme import iob2bio
+from pyner.tool.corpus.tag_scheme import bio2bioes
+from pyner.tool.corpus.tag_scheme import iob2bio
 
 import unittest
 
