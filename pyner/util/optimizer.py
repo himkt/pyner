@@ -8,28 +8,32 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def create_optimizer(optimizer_config):
+def create_optimizer(configs):
     """
     :param optimizer_config: dict, 学習のパラメータを含む辞書
     """
 
-    optimizer_ = optimizer_config['name']
+    if 'optimizer' not in configs:
+        raise Exception('Optimizer configurations are not found')
+
+    optimizer_configs = configs['optimizer']
+    optimizer_ = optimizer_configs['name']
     optimizer_ = optimizer_.lower()
 
     if optimizer_ == 'sgd':
-        optimizer = optimizers.SGD(lr=optimizer_config['learning_rate'])
+        optimizer = optimizers.SGD(lr=optimizer_configs['learning_rate'])
 
     elif optimizer_ == 'momentumsgd':
         optimizer = optimizers.MomentumSGD(
-            lr=optimizer_config['learning_rate'])
+            lr=optimizer_configs['learning_rate'])
 
     elif optimizer_ == 'adadelta':
         optimizer = optimizers.AdaDelta()
 
     elif optimizer_ == 'adam':
-        optimizer = optimizers.Adam(alpha=optimizer_config['alpha'],
-                                    beta1=optimizer_config['beta1'],
-                                    beta2=optimizer_config['beta2'])
+        optimizer = optimizers.Adam(alpha=optimizer_configs['alpha'],
+                                    beta1=optimizer_configs['beta1'],
+                                    beta2=optimizer_configs['beta2'])
 
     else:
         raise Exception

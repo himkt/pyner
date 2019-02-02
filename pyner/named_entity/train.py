@@ -67,11 +67,23 @@ def prepare_pretrained_word_vector(
     return syn0
 
 
-def create_iterator(vocab, external_config, batch_config, role, transform):
-    dataset = SequenceLabelingDataset(vocab, external_config, role, transform)
-    shuffle = True if role == 'train' else False
-    repeat = True if role == 'train' else False
-    batch_size = batch_config['batch_size'] if role == 'train' else len(dataset)
+def create_iterator(vocab, configs, role, transform):
+    if 'batch' not in configs:
+        raise Exception('Batch configurations are not found')
+
+    if 'external' not in configs:
+        raise Exception('External data configurations are not found')
+
+    batch_configs = configs['batch']
+    external_configs = configs['external']
+
+    is_train = role == 'train'
+    shuffle = True if is_train else False
+    repeat = True if is_train else False
+
+    dataset = SequenceLabelingDataset(vocab, external_configs, role, transform)
+    batch_size = batch_configs['batch_size'] if is_train else len(dataset)
+
     iterator = It.SerialIterator(
         dataset,
         batch_size=batch_size,
@@ -93,23 +105,18 @@ if __name__ == '__main__':
         chainer.cuda.get_device(args.device).use()
     set_seed(args.seed, args.device)
 
-    config_parser = ConfigParser(args.config)
+    configs = ConfigParser.parse(args.config)
     config_path = Path(args.config)
 
-    batch_config = config_parser['batch']
-    external_config = config_parser['external']
-    model_config = config_parser['model']
-    optimizer_config = config_parser['optimizer']
-    model_path = Path(config_parser['output'])
-
+    model_path = configs['output']
     logger.debug(f'model_dir: {model_path}')
-    vocab = Vocabulary.prepare(config_parser['external'])
+    vocab = Vocabulary.prepare(configs)
 
     num_word_vocab = max(vocab.dictionaries['word2idx'].values()) + 1
     num_char_vocab = max(vocab.dictionaries['char2idx'].values()) + 1
     num_tag_vocab = max(vocab.dictionaries['tag2idx'].values()) + 1
 
-    model = BiLSTM_CRF(model_config,
+    model = BiLSTM_CRF(configs,
                        num_word_vocab,
                        num_char_vocab,
                        num_tag_vocab)
@@ -126,17 +133,14 @@ if __name__ == '__main__':
         )
         model.set_pretrained_word_vectors(syn0)
 
-    train_iterator = create_iterator(vocab, external_config,
-                                     batch_config, 'train', transform)
-    valid_iterator = create_iterator(vocab, external_config,
-                                     batch_config, 'validation', transform)
-    test_iterator = create_iterator(vocab, external_config,
-                                    batch_config, 'test', transform)
+    train_iterator = create_iterator(vocab, configs, 'train', transform)
+    valid_iterator = create_iterator(vocab, configs, 'validation', transform)
+    test_iterator = create_iterator(vocab, configs, 'test', transform)
 
     if args.device >= 0:
         model.to_gpu(args.device)
 
-    optimizer = create_optimizer(optimizer_config)
+    optimizer = create_optimizer(configs)
     optimizer.setup(model)
     optimizer = add_hooks(optimizer, params)
 
@@ -144,14 +148,15 @@ if __name__ == '__main__':
                                 converter=converter,
                                 device=args.device)
 
-    params = config_parser.export()
+    params = configs.export()
     params['num_word_vocab'] = num_word_vocab
     params['num_char_vocab'] = num_char_vocab
     params['num_tag_vocab'] = num_tag_vocab
     save_args(params, model_path)
 
+    epoch = configs['batch']['epoch']
     logger.debug(f'Create {model_path} for trainer\'s output')
-    trigger = (batch_config['epoch'], 'epoch')
+    trigger = (epoch, 'epoch')
 
     trainer = T.Trainer(
         updater,
