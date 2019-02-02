@@ -1,17 +1,31 @@
 from pathlib import Path
-
 import logging
 import re
 
 
-logger = logging.getLogger(__name__)
 SPECIAL_SYMBOLS = ['<UNK>', '<PAD>']
-FIELDS_PREPROCESSED = ['word', 'char', 'tag', 'label']
+FIELDS_ALL = ['word', 'char', 'tag']
+FIELDS_PREPROCESSED = ['word', 'char']
+FIELDS_NEED_SPECIAL_SYMBOLS = ['word', 'char']
+
+
+logger = logging.getLogger(__name__)
 
 
 def _replace_zero(ws):
     ws = [re.sub(r'\d', '0', w) for w in ws]
     return ws
+
+
+def _lowercase(ws):
+    ws = [w.lower() for w in ws]
+    return ws
+
+
+def _insert_special_symbols(vocabulary):
+    for symbol in SPECIAL_SYMBOLS:
+        vocabulary[symbol] = len(vocabulary)
+    return vocabulary
 
 
 class Vocabulary:
@@ -40,6 +54,7 @@ class Vocabulary:
 
         if self.lower:
             logger.debug('Lowercase')
+            vocab = _lowercase(vocab)
 
         return vocab
 
@@ -55,8 +70,10 @@ class Vocabulary:
             self._load_pretrained_word_vectors(self.gensim_model_path)
 
         for name, vocab_arr in self.vocab_arr.items():
-            dictionary = {w: i for i, w in enumerate(vocab_arr)}
-            self.dictionaries[f'{name}2idx'] = dictionary
+            vocabulary = {w: i for i, w in enumerate(vocab_arr)}
+            if name in FIELDS_NEED_SPECIAL_SYMBOLS:
+                vocabulary = _insert_special_symbols(vocabulary)
+            self.dictionaries[f'{name}2idx'] = vocabulary
 
     def _read(self, vocab_file):
         with open(vocab_file, encoding='utf-8') as vocab_file:
@@ -74,7 +91,7 @@ class Vocabulary:
             self.vocab_arr[field] = vocab_arr
 
     @classmethod
-    def prepare(cls, params, fields=FIELDS_PREPROCESSED):
+    def prepare(cls, params, fields=FIELDS_ALL):
         vocab = cls(params)
 
         for field in fields:
@@ -118,7 +135,9 @@ class Vocabulary:
         from gensim.models import KeyedVectors
         logger.debug(f'Load pre-trained word vectors: {word_vector_path}')
         self.gensim_model = KeyedVectors.load(word_vector_path)
-        gensim_model_vocab = list(self.gensim_model.vocab.keys())
+        vocab_arr = list(self.gensim_model.vocab.keys())
+        vocab_arr = self._process(vocab_arr)
+        gensim_model_vocab = list(vocab_arr)
 
         va = set(self.vocab_arr['word'])
         vb = set(gensim_model_vocab)
