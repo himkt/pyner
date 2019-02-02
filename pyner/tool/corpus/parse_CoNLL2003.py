@@ -1,7 +1,7 @@
-from pyner_corpus.common import CorpusParser
-from pyner_corpus.common import write_sentences
-from pyner_corpus.common import write_vocab
-from pyner_corpus.common import enum
+from pyner.tool.corpus.common import CorpusParser
+from pyner.tool.corpus.common import write_sentences
+from pyner.tool.corpus.common import write_vocab
+from pyner.tool.corpus.common import enum
 
 
 import argparse
