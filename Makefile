@@ -32,12 +32,14 @@ test:
 lint:
 	flake8 pyner
 
-install:
-	python3.6 setup.py install --user
-
-conll:
+conlleval:
 	cd ./pyner/tool && curl https://www.clips.uantwerpen.be/conll2000/chunking/conlleval.txt > conlleval
 	cd ./pyner/tool && chmod 777 conlleval
 
 tmux:
 	tmux -f .dotfiles/.tmux.conf
+
+get-glove:
+	cd data && wget http://nlp.stanford.edu/data/glove.6B.zip
+	cd data && unzip glove.6B.zip
+	cd data && rm glove.6B.zip
