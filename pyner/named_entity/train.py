@@ -25,37 +25,23 @@ import yaml
 
 def prepare_pretrained_word_vector(
         word2idx,
-        word_vector_path,
-        syn0_original,
+        gensim_model,
+        syn0,
         lowercase=False
 ):
-
-    import gensim
-    import numpy
-
-    num_word_vocab, word_dim = syn0_original.shape
-    word_vector_gensim = gensim.models.KeyedVectors.load(
-        word_vector_path
-    )
-    syn0 = numpy.zeros(
-        [num_word_vocab, word_dim],
-        dtype=numpy.float32
-    )
-
-    assert word_vector_gensim.wv.vector_size == word_dim
 
     # if lowercased word is in pre-trained embeddings,
     # increment match2
     match1, match2 = 0, 0
 
     for word, idx in word2idx.items():
-        if word in word_vector_gensim:
-            word_vector = word_vector_gensim.wv.word_vec(word)
+        if word in gensim_model:
+            word_vector = gensim_model.wv.word_vec(word)
             syn0[idx, :] = word_vector
             match1 += 1
 
-        elif lowercase and word.lower() in word_vector_gensim:
-            word_vector = word_vector_gensim.wv.word_vec(word.lower())
+        elif lowercase and word.lower() in gensim_model:
+            word_vector = gensim_model.wv.word_vec(word.lower())
             syn0[idx, :] = word_vector
             match2 += 1
 
@@ -124,12 +110,23 @@ if __name__ == '__main__':
     transformer = DatasetTransformer(vocab)
     transform = transformer.transform
 
-    if 'word_vector' in external_config:
+    external_configs = configs['external']
+    preprocessing_configs = configs['preprocessing']
+    if 'word_vector' in external_configs:
+        syn0 = model.embed_word.W.data
+        _, word_dim = syn0.shape
+        pre_word_dim = vocab.gensim_model.vector_size
+        if word_dim != pre_word_dim:
+            msg = 'Mismatch vector size between model and pre-trained word vectors'  # NOQA
+            msg += f'(model: {word_dim}, pre-trained word vector: {pre_word_dim}'  # NOQA
+            raise Exception(msg)
+
         word2idx = vocab.dictionaries['word2idx']
         syn0 = prepare_pretrained_word_vector(
             word2idx,
-            external_config['word_vector'],
-            model.embed_word.W.data
+            vocab.gensim_model,
+            syn0,
+            preprocessing_configs['lower']
         )
         model.set_pretrained_word_vectors(syn0)
 
