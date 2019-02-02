@@ -45,15 +45,15 @@ PyNER offers the way to create dataset from CoNLL 2003 dataset
 
 If you could prepare CoNLL 2003 dataset, you would have three files like below.
 
-─ eng.iob.testa
-─ eng.iob.testb
-─ eng.iob.train
+- eng.iob.testa
+- eng.iob.testb
+- eng.iob.train
 
 Please put them to the same directoy (e.g. `datasets`).
 Dataset structure is like below.
 
 ```
-/datasets
+datasets
 ├── eng.iob.testa
 ├── eng.iob.testb
 └── eng.iob.train
@@ -62,7 +62,10 @@ Dataset structure is like below.
 Then, you can create the dataset for pyner by following command.
 
 ```
-python pyner/tool/corpus/parse_CoNLL2003.py --data-dir datasets3 --output-dir data/processed/CoNLL2003_BIOES --format iob2bioes
+python pyner/tool/corpus/parse_CoNLL2003.py \
+  --data-dir [path_to_datasets] \
+  --output-dir data/processed/CoNLL2003_BIOES \
+  --format iob2bioes
 ```
 
 After running the command, `./data/processed/CoNLL2003_BIOES` is generated for you!
@@ -77,7 +80,8 @@ To use this, please download and rename to `lample_embedding.txt`
 Then run a following command.
 
 ```
-python pyner/tool/vector/word2vec2gensim.py ./lample_embedding.txt data/processed/lample_embeddings
+python pyner/tool/vector/word2vec2gensim.py \
+  [path_to_lample_embedding.txt] data/processed/lample_embeddings
 ```
 
 
