@@ -14,44 +14,48 @@ class BiLSTM_CRF(chainer.Chain):
     """
     BiLSTM-CRF: Bidirectional LSTM + Conditional Random Field as a decoder
     """
+
     def __init__(self,
-                 model_config,
+                 configs,
                  num_word_vocab,
                  num_char_vocab,
                  num_tag_vocab
                  ):
 
         super(BiLSTM_CRF, self).__init__()
+        if 'model' not in configs:
+            raise Exception('Model configurations are not found')
 
-        params = model_config
-        params['num_word_vocab'] = num_word_vocab
-        params['num_char_vocab'] = num_char_vocab
-        params['num_tag_vocab'] = num_tag_vocab
+        model_configs = configs['model']
+
+        model_configs['num_word_vocab'] = num_word_vocab
+        model_configs['num_char_vocab'] = num_char_vocab
+        model_configs['num_tag_vocab'] = num_tag_vocab
 
         # word encoder
-        self.num_word_vocab = params.get('num_word_vocab')
-        self.word_dim = params.get('word_dim')
-        self.word_hidden_dim = params.get('word_hidden_dim')
+        self.num_word_vocab = model_configs.get('num_word_vocab')
+        self.word_dim = model_configs.get('word_dim')
+        self.word_hidden_dim = model_configs.get('word_hidden_dim')
 
         # char encoder
-        self.num_char_vocab = params.get('num_char_vocab')
+        self.num_char_vocab = model_configs.get('num_char_vocab')
         self.num_char_hidden_layers = 1
-        self.char_dim = params.get('char_dim')
-        self.char_hidden_dim = params.get('char_hidden_dim')
+        self.char_dim = model_configs.get('char_dim')
+        self.char_hidden_dim = model_configs.get('char_hidden_dim')
 
         # integrated word encoder
         self.num_word_hidden_layers = 1  # same as Lample
-        self.word_hidden_dim = params.get('word_hidden_dim')
+        self.word_hidden_dim = model_configs.get('word_hidden_dim')
 
         # transformer
         self.linear_input_dim = 0
 
         # decoder
-        self.num_tag_vocab = params.get('num_tag_vocab')
+        self.num_tag_vocab = model_configs.get('num_tag_vocab')
 
         # feature extractor (BiLSTM)
         self.internal_hidden_dim = 0
-        self.dropout_rate = params.get('dropout', 0)
+        self.dropout_rate = model_configs.get('dropout', 0)
 
         # param initializer
         # approx: https://github.com/glample/tagger/blob/master/utils.py#L44
