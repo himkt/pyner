@@ -27,11 +27,8 @@ if __name__ == '__main__':
 
     model_dir = pathlib.Path(args.model)
     configs = json.load(open(model_dir / 'args'))
-    external_config = configs['external']
-    model_config = configs['model']
-    batch_config = configs['batch']
 
-    vocab = Vocabulary.prepare(external_config)
+    vocab = Vocabulary.prepare(configs)
     metric = args.metric.replace('/', '.')
 
     snapshot_file, prediction_path = select_snapshot(args, model_dir)
@@ -40,7 +37,7 @@ if __name__ == '__main__':
     num_word_vocab = configs['num_word_vocab']
     num_char_vocab = configs['num_char_vocab']
     num_tag_vocab = configs['num_tag_vocab']
-    model = BiLSTM_CRF(model_config, num_word_vocab,
+    model = BiLSTM_CRF(configs, num_word_vocab,
                        num_char_vocab, num_tag_vocab)
 
     model_path = model_dir / snapshot_file
@@ -53,7 +50,7 @@ if __name__ == '__main__':
     transformer = DatasetTransformer(vocab)
     transform = transformer.transform
 
-    test_dataset = SequenceLabelingDataset(vocab, external_config,
+    test_dataset = SequenceLabelingDataset(vocab, configs['external'],
                                            'test', transform)
     test_iterator = It.SerialIterator(test_dataset,
                                       batch_size=len(test_dataset),
