@@ -20,13 +20,6 @@ def enum(word_sentences, tag_sentences):
     chars = sorted(list(set(sum([list(word) for word in words], []))))
     tags = sorted(list(set(sum(tag_sentences, []))))
 
-    words.insert(0, '<PAD>')
-    chars.insert(0, '<PAD>')
-    tags.insert(0, '<PAD>')
-
-    words.insert(1, '<UNK>')
-    chars.insert(1, '<UNK>')
-
     return words, chars, tags
 
 
