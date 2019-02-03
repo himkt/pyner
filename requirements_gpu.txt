@@ -1,1 +1,2 @@
-cupy-cuda92==5.2.0
+cupy-cuda92==6.0.0b1
+# cupy-cuda92==6.0.0b2
