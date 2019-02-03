@@ -26,9 +26,6 @@ test:
 lint:
 	flake8 pyner
 
-tmux:
-	tmux -f .dotfiles/.tmux.conf
-
 get-glove:
 	cd data && wget http://nlp.stanford.edu/data/glove.6B.zip
 	cd data && unzip glove.6B.zip
