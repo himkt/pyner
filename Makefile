@@ -16,7 +16,8 @@ build:
 
 start:
 	$(SUDO) $(DOCKER) run \
-		--volume $(PWD):/docker \
+		--volume $(PWD)/data:/home/docker/data \
+		--volume $(PWD)/model:/home/docker/model \
 		-it $(TAG)
 
 test:
@@ -24,10 +25,6 @@ test:
 
 lint:
 	flake8 pyner
-
-conlleval:
-	curl https://www.clips.uantwerpen.be/conll2000/chunking/conlleval.txt > conlleval
-	chmod 777 conlleval
 
 tmux:
 	tmux -f .dotfiles/.tmux.conf
