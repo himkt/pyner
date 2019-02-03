@@ -29,14 +29,20 @@ In Docker container
 - run experiments
 
 ```
-pip3 install . # you have to run this command on docker container
-python3 pyner/named_entity/train.py config/001.config --gpu 0
+# If a GPU is not available, specify `--gpu -1`
+python3 train.py config/training/conll_strong.yaml --gpu 0
 ```
+
+This experiment uses CoNLL 2003 dataset.
+Please read the following "Prepare dataset" section.
 
 
 ### Prepare dataset
 
 Dataset format is the same as https://github.com/guillaumegenthial/tf_ner/tree/master/data/example
+
+If you want to reproduce the result of Lample's NER tagger on CoNLL 2003,
+first of all, you have to prepare CoNLL 2003 dataset.
 
 #### Using CoNLL 2003 Dataset
 
@@ -87,8 +93,7 @@ python pyner/tool/vector/word2vec2gensim.py \
 
 ### Reference
 - [Neural Architectures for Named Entity Recognition]
-  - NAACL2016
-  - Lample et al.
+  - NAACL2016, Lample et al.
 
 
 [Neural Architectures for Named Entity Recognition]: https://arxiv.org/abs/1603.01360
