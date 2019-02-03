@@ -1,0 +1,5 @@
+# training data
+data_dir: "./data/processed/CoNLL2003_POS"
+
+# pre-trained word vectors
+word_vector: "./data/processed/lample_embeddings"

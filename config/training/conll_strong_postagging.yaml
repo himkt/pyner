@@ -1,0 +1,7 @@
+
+batch: "./config/batch/simple.yaml"
+external: "./config/external/conll_lample_strong_postagging.yaml"
+model: "./config/model/lample.yaml"
+optimizer: "./config/optimizer/sgd.yaml"
+preprocessing: "./config/preprocessing/simple.yaml"
+output: "model/lample"

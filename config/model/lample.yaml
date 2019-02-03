@@ -1,0 +1,5 @@
+word_dim: 100
+word_hidden_dim: 100
+char_dim: 25
+char_hidden_dim: 25
+dropout: 0.5
