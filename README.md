@@ -1,7 +1,12 @@
-<div align="center"><img src="./static/image/pyner.png" width="800"/></div>
+<div align="center"><img src="./static/image/pyner.png" width="600"/></div>
 
+# PyNER: Extensible implementation of Named Entity Recognizer
 
-# PyNER: Extensible Implementation of Neural Named Entity Recognizer
+[![CircleCI](https://circleci.com/gh/himkt/pyner.svg?style=svg)](https://circleci.com/gh/himkt/pyner)
+[![GitHub stars](https://img.shields.io/github/stars/himkt/pyner.svg?maxAge=2592000&colorB=blue)](https://github.com/himkt/pyner/stargazers)
+[![GitHub issues](https://img.shields.io/github/issues/himkt/pyner.svg)](https://github.com/himkt/pyner/issues)
+[![GitHub release](https://img.shields.io/github/release/himkt/pyner.svg?maxAge=2592000&colorB=red)](https://github.com/himkt/pyner)
+[![MIT License](http://img.shields.io/badge/license-MIT-yellow.svg?style=flat)](LICENSE)
 
 PyNER is a chainer implementation for neural named entity recognizer.
 It is designed so that users can define arbitrary module (e.g. LSTM, CNN, ...).
