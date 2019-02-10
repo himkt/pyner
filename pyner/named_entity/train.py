@@ -149,11 +149,14 @@ if __name__ == '__main__':
     params['num_word_vocab'] = num_word_vocab
     params['num_char_vocab'] = num_char_vocab
     params['num_tag_vocab'] = num_tag_vocab
-    save_args(params, model_path)
 
     epoch = configs['batch']['epoch']
     logger.debug(f'Create {model_path} for trainer\'s output')
     trigger = (epoch, 'epoch')
+
+    output_path = Path(model_path)
+    output_path.mkdir(parents=True, exist_ok=True)
+    save_args(params, model_path)
 
     trainer = T.Trainer(
         updater,

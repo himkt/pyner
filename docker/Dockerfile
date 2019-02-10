@@ -1,5 +1,6 @@
 FROM nvidia/cuda:9.2-cudnn7-devel-ubuntu18.04
 ENV PYTHONIOENCODING "utf-8"
+ARG GID
 ARG UID
 
 
@@ -40,7 +41,7 @@ RUN curl https://www.clips.uantwerpen.be/conll2000/chunking/conlleval.txt > conl
 RUN chmod 777 conlleval
 
 
-RUN groupadd -g $UID dockerg && \
+RUN groupadd -g $GID dockerg && \
     useradd -u $UID -g dockerg -G sudo -m -s /bin/bash docker && \
     echo 'docker:root' | chpasswd
 

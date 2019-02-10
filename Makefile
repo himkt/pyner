@@ -11,11 +11,13 @@ export SUDO='sudo'
 build:
 	$(SUDO) $(DOCKER) build \
 		-t $(TAG) . \
+		--build-arg GID=$(USERGROUPID) \
 		--build-arg UID=$(USERID) \
 		--file=docker/Dockerfile
 
 start:
 	$(SUDO) $(DOCKER) run \
+		--user $(USERID):$(USERID) \
 		--volume $(PWD)/data:/home/docker/data \
 		--volume $(PWD)/model:/home/docker/model \
 		-it $(TAG)
