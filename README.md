@@ -87,13 +87,7 @@ After running the command, `./data/processed/CoNLL2003_BIOES` is generated for y
 Using pre-trained word embeddings significantly improve the performance of NER.
 Lample et al. also use pre-trained word embeddings.
 They use Skip-N-Gram embeddings, which can be downloaded from [Official repo's issue].
-To use this, please download and rename to `lample_embedding.txt`
-Then run a following command.
-
-```
-python pyner/tool/vector/word2vec2gensim.py \
-  [path_to_lample_embedding.txt] data/processed/lample_embeddings
-```
+To use this, please run `make get-lample` before running `make build`.
 
 
 ### Reference
