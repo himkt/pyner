@@ -30,3 +30,9 @@ get-glove:
 	cd data && wget http://nlp.stanford.edu/data/glove.6B.zip
 	cd data && unzip glove.6B.zip
 	cd data && rm glove.6B.zip
+
+get-lample:
+	cd data/processed/lample_embeddings && bash download.sh && rm cookie.txt
+	python pyner/tool/vector/word2vec2gensim.py \
+		data/processed/lample_embeddings/100d.txt \
+		data/processed/lample_embeddings/100d
