@@ -68,9 +68,9 @@ class BiLSTM_CRF(chainer.Chain):
             self._setup_feature_extractor()
             self._setup_decoder()
 
-        logger.debug(f'Dropout rate: {self.dropout_rate}')
-        logger.debug(f'Dim of word embeddings: {self.word_dim}')
-        logger.debug(f'Dim of character embeddings: {self.char_dim}')
+        logger.debug(f'Dropout rate: \x1b[31m{self.dropout_rate}\x1b[0m')
+        logger.debug(f'Dim of word embeddings: \x1b[31m{self.word_dim}\x1b[0m')
+        logger.debug(f'Dim of character embeddings: \x1b[31m{self.char_dim}\x1b[0m')  # NOQA
 
     def create_init_state(self, shape):
         h_0_data = self.xp.zeros(shape)

@@ -47,9 +47,9 @@ def prepare_pretrained_word_vector(
 
     match = match1 + match2
     matching_rate = 100 * (match/num_word_vocab)
-    logger.info(f'Found {matching_rate:.2f}% words in pre-trained vocab')
-    logger.info(f'- num_word_vocab: {num_word_vocab}')
-    logger.info(f'- match1: {match1}, match2: {match2}')
+    logger.info(f'Found \x1b[31m{matching_rate:.2f}%\x1b[0m words in pre-trained vocab')  # NOQA
+    logger.info(f'- num_word_vocab: \x1b[31m{num_word_vocab}\x1b[0m')
+    logger.info(f'- match1: \x1b[31m{match1}\x1b[0m, match2: \x1b[31m{match2}\x1b[0m')  # NOQA
     return syn0
 
 
@@ -118,7 +118,8 @@ if __name__ == '__main__':
         pre_word_dim = vocab.gensim_model.vector_size
         if word_dim != pre_word_dim:
             msg = 'Mismatch vector size between model and pre-trained word vectors'  # NOQA
-            msg += f'(model: {word_dim}, pre-trained word vector: {pre_word_dim}'  # NOQA
+            msg += f'(model: \x1b[31m{word_dim}\x1b[0m'
+            msg += f', pre-trained word vector: \x1b[31m{pre_word_dim}\x1b[0m'
             raise Exception(msg)
 
         word2idx = vocab.dictionaries['word2idx']
@@ -163,6 +164,9 @@ if __name__ == '__main__':
         trigger,
         out=model_path
     )
+    save_args(params, output_path)
+    msg = f'Create \x1b[31m{output_path}\x1b[0m for saving model snapshots'
+    logging.debug(msg)
 
     entries = ['epoch', 'iteration', 'elapsed_time', 'lr',
                'main/loss', 'validation/main/loss',

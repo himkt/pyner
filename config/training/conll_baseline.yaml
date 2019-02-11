@@ -1,0 +1,7 @@
+
+iteration: "./config/iteration/base.yaml"
+external: "./config/external/conll.yaml"
+model: "./config/model/lample.yaml"
+optimizer: "./config/optimizer/sgd_with_clipping.yaml"
+preprocessing: "./config/preprocessing/znorm.yaml"
+output: "./model/baseline"
