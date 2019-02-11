@@ -9,14 +9,14 @@ import numpy as np
 logger = logging.getLogger(__name__)
 
 
-def update_instances(train_datas, params):
+def update_instances(train_datas, params, attr):
     train_size = params.get('train_size', 1.0)
     if train_size <= 0 or 1 <= train_size:
         assert Exception('train_size must be in (0, 1]')
     n_train = len(train_datas[0])
     instances = int(train_size * n_train)
     rate = 100 * train_size
-    logger.debug(f'Use {instances} example for training ({rate:.2f}%)')
+    logger.debug(f'Use {instances} example for {attr} ({rate:.2f}%)')
     return [t[:instances] for t in train_datas]
 
 
@@ -77,7 +77,7 @@ class SequenceLabelingDataset(D.DatasetMixin):
         word_sentences = vocab.load_word_sentences(word_path)
         tag_sentences = vocab.load_tag_sentences(tag_path)
         datas = [word_sentences, tag_sentences]
-        word_sentences, tag_sentences = update_instances(datas, params)
+        word_sentences, tag_sentences = update_instances(datas, params, attr)
         self.word_sentences = word_sentences
         self.tag_sentences = tag_sentences
 

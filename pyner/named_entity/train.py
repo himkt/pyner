@@ -18,6 +18,7 @@ import chainer.iterators as It
 import chainer.training as T
 import chainer.training.extensions as E
 
+import datetime
 import chainer
 import logging
 import yaml
@@ -27,7 +28,6 @@ def prepare_pretrained_word_vector(
         word2idx,
         gensim_model,
         syn0,
-        lowercase=False
 ):
 
     # if lowercased word is in pre-trained embeddings,
@@ -40,7 +40,7 @@ def prepare_pretrained_word_vector(
             syn0[idx, :] = word_vector
             match1 += 1
 
-        elif lowercase and word.lower() in gensim_model:
+        elif word.lower() in gensim_model:
             word_vector = gensim_model.wv.word_vec(word.lower())
             syn0[idx, :] = word_vector
             match2 += 1
@@ -54,13 +54,13 @@ def prepare_pretrained_word_vector(
 
 
 def create_iterator(vocab, configs, role, transform):
-    if 'batch' not in configs:
+    if 'iteration' not in configs:
         raise Exception('Batch configurations are not found')
 
     if 'external' not in configs:
         raise Exception('External data configurations are not found')
 
-    batch_configs = configs['batch']
+    iteration_configs = configs['iteration']
     external_configs = configs['external']
 
     is_train = role == 'train'
@@ -68,7 +68,7 @@ def create_iterator(vocab, configs, role, transform):
     repeat = True if is_train else False
 
     dataset = SequenceLabelingDataset(vocab, external_configs, role, transform)
-    batch_size = batch_configs['batch_size'] if is_train else len(dataset)
+    batch_size = iteration_configs['batch_size'] if is_train else len(dataset)
 
     iterator = It.SerialIterator(
         dataset,
@@ -94,10 +94,7 @@ if __name__ == '__main__':
     configs = ConfigParser.parse(args.config)
     config_path = Path(args.config)
 
-    model_path = configs['output']
-    logger.debug(f'model_dir: {model_path}')
     vocab = Vocabulary.prepare(configs)
-
     num_word_vocab = max(vocab.dictionaries['word2idx'].values()) + 1
     num_char_vocab = max(vocab.dictionaries['char2idx'].values()) + 1
     num_tag_vocab = max(vocab.dictionaries['tag2idx'].values()) + 1
@@ -126,8 +123,7 @@ if __name__ == '__main__':
         syn0 = prepare_pretrained_word_vector(
             word2idx,
             vocab.gensim_model,
-            syn0,
-            preprocessing_configs['lower']
+            syn0
         )
         model.set_pretrained_word_vectors(syn0)
 
@@ -151,18 +147,18 @@ if __name__ == '__main__':
     params['num_char_vocab'] = num_char_vocab
     params['num_tag_vocab'] = num_tag_vocab
 
-    epoch = configs['batch']['epoch']
-    logger.debug(f'Create {model_path} for trainer\'s output')
+    epoch = configs['iteration']['epoch']
     trigger = (epoch, 'epoch')
 
-    output_path = Path(model_path)
-    output_path.mkdir(parents=True, exist_ok=True)
-    save_args(params, model_path)
+    model_path = configs['output']
+    timestamp = datetime.datetime.now()
+    timestamp_str = timestamp.isoformat()
+    output_path = Path(f'{model_path}.{timestamp_str}')
 
     trainer = T.Trainer(
         updater,
         trigger,
-        out=model_path
+        out=output_path
     )
     save_args(params, output_path)
     msg = f'Create \x1b[31m{output_path}\x1b[0m for saving model snapshots'
