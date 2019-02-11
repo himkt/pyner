@@ -41,16 +41,15 @@ def create_optimizer(configs):
     return optimizer
 
 
-def add_hooks(optimizer, params):
+def add_hooks(optimizer, configs):
     """
     :param optimizer: chainer.Optimizer, chainerのオプティマイザ
-    :param params: dict, 学習のパラメータを含む辞書
+    :param configs: pyner.util.config.ConfigParser
     """
+    if 'optimizer' not in configs:
+        raise Exception('Optimizer configurations are not found')
 
-    if params.get('weight_decay'):
-        logger.debug('set weight decay')
-        optimizer.add_hook(optimizer_hooks.WeightDecay(
-            params['weight_decay']))
+    optimizer_configs = configs['optimizer']
 
     if optimizer_configs.get('weight_decay'):
         logger.debug('\x1b[31mSet weight decay\x1b[0m')

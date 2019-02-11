@@ -140,7 +140,7 @@ if __name__ == '__main__':
 
     optimizer = create_optimizer(configs)
     optimizer.setup(model)
-    optimizer = add_hooks(optimizer, params)
+    optimizer = add_hooks(optimizer, configs)
 
     updater = T.StandardUpdater(train_iterator, optimizer,
                                 converter=converter,
