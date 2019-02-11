@@ -18,6 +18,7 @@ import chainer.iterators as It
 import chainer.training as T
 import chainer.training.extensions as E
 
+import datetime
 import chainer
 import logging
 import yaml
@@ -93,10 +94,7 @@ if __name__ == '__main__':
     configs = ConfigParser.parse(args.config)
     config_path = Path(args.config)
 
-    model_path = configs['output']
-    logger.debug(f'model_dir: {model_path}')
     vocab = Vocabulary.prepare(configs)
-
     num_word_vocab = max(vocab.dictionaries['word2idx'].values()) + 1
     num_char_vocab = max(vocab.dictionaries['char2idx'].values()) + 1
     num_tag_vocab = max(vocab.dictionaries['tag2idx'].values()) + 1
@@ -152,14 +150,15 @@ if __name__ == '__main__':
     epoch = configs['iteration']['epoch']
     trigger = (epoch, 'epoch')
 
-    output_path = Path(model_path)
-    output_path.mkdir(parents=True, exist_ok=True)
-    save_args(params, model_path)
+    model_path = configs['output']
+    timestamp = datetime.datetime.now()
+    timestamp_str = timestamp.isoformat()
+    output_path = Path(f'{model_path}.{timestamp_str}')
 
     trainer = T.Trainer(
         updater,
         trigger,
-        out=model_path
+        out=output_path
     )
     save_args(params, output_path)
     msg = f'Create \x1b[31m{output_path}\x1b[0m for saving model snapshots'
