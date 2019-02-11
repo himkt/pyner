@@ -54,13 +54,13 @@ def prepare_pretrained_word_vector(
 
 
 def create_iterator(vocab, configs, role, transform):
-    if 'batch' not in configs:
+    if 'iteration' not in configs:
         raise Exception('Batch configurations are not found')
 
     if 'external' not in configs:
         raise Exception('External data configurations are not found')
 
-    batch_configs = configs['batch']
+    iteration_configs = configs['iteration']
     external_configs = configs['external']
 
     is_train = role == 'train'
@@ -68,7 +68,7 @@ def create_iterator(vocab, configs, role, transform):
     repeat = True if is_train else False
 
     dataset = SequenceLabelingDataset(vocab, external_configs, role, transform)
-    batch_size = batch_configs['batch_size'] if is_train else len(dataset)
+    batch_size = iteration_configs['batch_size'] if is_train else len(dataset)
 
     iterator = It.SerialIterator(
         dataset,
@@ -151,8 +151,7 @@ if __name__ == '__main__':
     params['num_char_vocab'] = num_char_vocab
     params['num_tag_vocab'] = num_tag_vocab
 
-    epoch = configs['batch']['epoch']
-    logger.debug(f'Create {model_path} for trainer\'s output')
+    epoch = configs['iteration']['epoch']
     trigger = (epoch, 'epoch')
 
     output_path = Path(model_path)
