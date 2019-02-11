@@ -47,8 +47,8 @@ class Vocabulary:
         self.dictionaries = {}
         self.vocab_arr = {}
 
-        logger.debug(f'Zero normalization: {self.replace_zero}')
-        logger.debug(f'Lowercase: {self.lower}')
+        logger.debug(f'Zero normalization: \x1b[31m{self.replace_zero}\x1b[0m')
+        logger.debug(f'Lowercase: \x1b[31m{self.lower}\x1b[0m')
 
     def _process(self, vocab):
         if self.replace_zero:
@@ -128,12 +128,16 @@ class Vocabulary:
         else:
             return Exception('Unknown operator is specified')
 
-        logger.debug(f'num_vocab: {len(vc)} (with set opetaroe {operator})')
+        msg = f'num_vocab: \x1b[31m{len(vc)}\x1b[0m'
+        msg += f' (with set operator \x1b[31m{operator}\x1b[0m)'
+        logger.debug(msg)
         return vc
 
     def _load_pretrained_word_vectors(self, word_vector_path):
         from gensim.models import KeyedVectors
-        logger.debug(f'Load pre-trained word vectors: {word_vector_path}')
+        msg = 'Load pre-trained word vectors:'
+        msg += f' \x1b[31m{word_vector_path}\x1b[0m'
+        logger.debug(msg)
         self.gensim_model = KeyedVectors.load(word_vector_path)
         vocab_arr = list(self.gensim_model.vocab.keys())
         vocab_arr = self._process(vocab_arr)

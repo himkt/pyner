@@ -1,7 +1,0 @@
-
-batch: "./config/batch/simple.yaml"
-external: "./config/external/conll_lample_weak.yaml"
-model: "./config/model/lample.yaml"
-optimizer: "./config/optimizer/sgd.yaml"
-preprocessing: "./config/preprocessing/simple.yaml"
-output: "model/lample_weak"

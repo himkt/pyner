@@ -52,10 +52,19 @@ def add_hooks(optimizer, params):
         optimizer.add_hook(optimizer_hooks.WeightDecay(
             params['weight_decay']))
 
-    if params.get('gradient_clipping'):
-        logger.debug('clip gradient')
-        optimizer.add_hook(optimizer_hooks.GradientClipping(
-            params['gradient_clipping']))
+    if optimizer_configs.get('weight_decay'):
+        logger.debug('\x1b[31mSet weight decay\x1b[0m')
+        optimizer.add_hook(optimizer_hooks.WeightDecay(
+            optimizer_configs['weight_decay']))
+
+    if 'gradient_clipping' in optimizer_configs:
+        clipping_threshold = optimizer_configs['gradient_clipping']
+        msg = 'Enable gradient clipping:'
+        msg += f' threshold \x1b[31m{clipping_threshold}\x1b[0m'
+        logger.debug(msg)
+        optimizer.add_hook(
+            optimizer_hooks.GradientClipping(clipping_threshold)
+        )
 
     return optimizer
 

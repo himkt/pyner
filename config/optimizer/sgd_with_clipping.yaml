@@ -1,2 +1,4 @@
 name: 'SGD'
 learning_rate: 0.01
+
+gradient_clipping: 5.0
