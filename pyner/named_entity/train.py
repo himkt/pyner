@@ -27,7 +27,6 @@ def prepare_pretrained_word_vector(
         word2idx,
         gensim_model,
         syn0,
-        lowercase=False
 ):
 
     # if lowercased word is in pre-trained embeddings,
@@ -40,7 +39,7 @@ def prepare_pretrained_word_vector(
             syn0[idx, :] = word_vector
             match1 += 1
 
-        elif lowercase and word.lower() in gensim_model:
+        elif word.lower() in gensim_model:
             word_vector = gensim_model.wv.word_vec(word.lower())
             syn0[idx, :] = word_vector
             match2 += 1
@@ -126,8 +125,7 @@ if __name__ == '__main__':
         syn0 = prepare_pretrained_word_vector(
             word2idx,
             vocab.gensim_model,
-            syn0,
-            preprocessing_configs['lower']
+            syn0
         )
         model.set_pretrained_word_vectors(syn0)
 
