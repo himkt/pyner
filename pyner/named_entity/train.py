@@ -164,11 +164,9 @@ if __name__ == '__main__':
     msg = f'Create \x1b[31m{output_path}\x1b[0m for saving model snapshots'
     logging.debug(msg)
 
-    entries = ['epoch', 'iteration', 'elapsed_time', 'lr',
-               'main/loss', 'validation/main/loss',
-               'validation/main/fscore',
-               'validation_1/main/loss',
-               'validation_1/main/fscore']
+    entries = ['epoch', 'iteration', 'elapsed_time', 'lr', 'main/loss']
+    entries += ['validation/main/loss', 'validation/main/fscore']
+    entries += ['validation_1/main/loss', 'validation_1/main/fscore']
 
     valid_evaluator = NamedEntityEvaluator(valid_iterator, model,
                                            transformer.itransform,
