@@ -44,6 +44,11 @@ class Vocabulary:
         self.lower = preprocessing_configs.get('lower', False)
         self.data_path = Path(external_configs.get('data_dir'))
         self.gensim_model_path = external_configs.get('word_vector')
+        self.vocab_merge_operator = external_configs.get(
+            'vocab_merge_operator',
+            'union'
+        )
+
         self.dictionaries = {}
         self.vocab_arr = {}
 
@@ -120,7 +125,7 @@ class Vocabulary:
         return sentences
 
     @staticmethod
-    def _update_vocabulary(va, vb, operator='intersection'):
+    def _update_vocabulary(va, vb, operator):
         if operator == 'intersection':
             vc = va & vb
         elif operator == 'union':
@@ -145,5 +150,5 @@ class Vocabulary:
 
         va = set(self.vocab_arr['word'])
         vb = set(gensim_model_vocab)
-        vc = self._update_vocabulary(va, vb, 'union')
-        self.dictionaries['words'] = list(vc)
+        vc = self._update_vocabulary(va, vb, self.vocab_merge_operator)
+        self.vocab_arr['word'] = list(vc)
