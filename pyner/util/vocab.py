@@ -75,8 +75,10 @@ class Vocabulary:
         if self.gensim_model_path:
             self._load_pretrained_word_vectors(self.gensim_model_path)
 
-        for name, vocab_arr in self.vocab_arr.items():
-            vocabulary = {w: i for i, w in enumerate(sorted(vocab_arr))}
+        for name in self.vocab_arr.keys():
+            # NOTE python dictionaries are unordered
+            self.vocab_arr[name] = sorted(self.vocab_arr[name])
+            vocabulary = {w: i for i, w in enumerate(sorted(self.vocab_arr[name]))}  # NOQA
             if name in FIELDS_NEED_SPECIAL_SYMBOLS:
                 vocabulary = _insert_special_symbols(vocabulary)
             self.dictionaries[f'{name}2idx'] = vocabulary
