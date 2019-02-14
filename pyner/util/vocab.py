@@ -69,14 +69,16 @@ class Vocabulary:
         for field, vocab in self.vocab_arr.items():
             if field in FIELDS_PREPROCESSED:
                 vocab = self._process(vocab)
-            vocab_arr = sorted(list(set(vocab)))
+            vocab_arr = list(set(vocab))
             self.vocab_arr[field] = vocab_arr
 
         if self.gensim_model_path:
             self._load_pretrained_word_vectors(self.gensim_model_path)
 
-        for name, vocab_arr in self.vocab_arr.items():
-            vocabulary = {w: i for i, w in enumerate(vocab_arr)}
+        for name in self.vocab_arr.keys():
+            # NOTE python dictionaries are unordered
+            self.vocab_arr[name] = sorted(self.vocab_arr[name])
+            vocabulary = {w: i for i, w in enumerate(sorted(self.vocab_arr[name]))}  # NOQA
             if name in FIELDS_NEED_SPECIAL_SYMBOLS:
                 vocabulary = _insert_special_symbols(vocabulary)
             self.dictionaries[f'{name}2idx'] = vocabulary
@@ -133,15 +135,15 @@ class Vocabulary:
         else:
             return Exception('Unknown operator is specified')
 
-        msg = f'num_vocab: \x1b[31m{len(vc)}\x1b[0m'
+        num_vocab = len(vc)
+        msg = f' num_vocab: \x1b[31m{num_vocab}\x1b[0m'
         msg += f' (with set operator \x1b[31m{operator}\x1b[0m)'
         logger.debug(msg)
         return vc
 
     def _load_pretrained_word_vectors(self, word_vector_path):
         from gensim.models import KeyedVectors
-        msg = 'Load pre-trained word vectors:'
-        msg += f' \x1b[31m{word_vector_path}\x1b[0m'
+        msg = f'Load word vectors from \x1b[31m{word_vector_path}\x1b[0m'
         logger.debug(msg)
         self.gensim_model = KeyedVectors.load(word_vector_path)
         vocab_arr = list(self.gensim_model.vocab.keys())
