@@ -57,6 +57,12 @@ class DatasetTransformer:
         return wordid_sentence, charid_sentence, tagid_sentence
 
     def itransform(self, wordid_sentences, tagid_sentences):
+        """
+        convert wordids and tagids into words and tags
+        if you want to itransform iterator's output:
+        > (words, _), tags = batch
+        > itransform(words, tags)
+        """
         sentences = zip(wordid_sentences, tagid_sentences)
         return [self._itransform(ws, ts) for ws, ts in sentences]
 

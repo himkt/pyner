@@ -1,13 +1,12 @@
 from pyner.named_entity.dataset import converter
 from pyner.named_entity.dataset import DatasetTransformer
-from pyner.named_entity.dataset import SequenceLabelingDataset
 from pyner.named_entity.recognizer import BiLSTM_CRF
 from pyner.util.argparse import parse_inference_args
 from pyner.util.deterministic import set_seed
+from pyner.util.iterator import create_iterator
 from pyner.util.vocab import Vocabulary
 from pyner.util.metric import select_snapshot
 
-import chainer.iterators as It
 import chainer
 import pathlib
 import logging
@@ -28,17 +27,21 @@ if __name__ == '__main__':
     model_dir = pathlib.Path(args.model)
     configs = json.load(open(model_dir / 'args'))
 
-    vocab = Vocabulary.prepare(configs)
     metric = args.metric.replace('/', '.')
-
     snapshot_file, prediction_path = select_snapshot(args, model_dir)
     logger.debug(f'creat prediction into {prediction_path}')
 
+    vocab = Vocabulary.prepare(configs)
     num_word_vocab = configs['num_word_vocab']
     num_char_vocab = configs['num_char_vocab']
     num_tag_vocab = configs['num_tag_vocab']
-    model = BiLSTM_CRF(configs, num_word_vocab,
-                       num_char_vocab, num_tag_vocab)
+
+    model = BiLSTM_CRF(
+        configs,
+        num_word_vocab,
+        num_char_vocab,
+        num_tag_vocab
+    )
 
     model_path = model_dir / snapshot_file
     logger.debug(f'load {snapshot_file}')
@@ -49,13 +52,7 @@ if __name__ == '__main__':
 
     transformer = DatasetTransformer(vocab)
     transform = transformer.transform
-
-    test_dataset = SequenceLabelingDataset(vocab, configs['external'],
-                                           'test', transform)
-    test_iterator = It.SerialIterator(test_dataset,
-                                      batch_size=len(test_dataset),
-                                      shuffle=False,
-                                      repeat=False)
+    test_iterator = create_iterator(vocab, configs, 'test', transform)
 
     with open(prediction_path, 'w', encoding='utf-8') as file:
         for batch in test_iterator:

@@ -1,12 +1,12 @@
 from pyner.named_entity.dataset import converter
 from pyner.named_entity.dataset import DatasetTransformer
-from pyner.named_entity.dataset import SequenceLabelingDataset
 from pyner.named_entity.evaluator import NamedEntityEvaluator
 from pyner.named_entity.recognizer import BiLSTM_CRF
 from pyner.util.argparse import parse_train_args
 from pyner.util.config import ConfigParser
 from pyner.util.deterministic import set_seed
 from pyner.util.vocab import Vocabulary
+from pyner.util.iterator import create_iterator
 from pyner.util.optimizer import create_optimizer
 from pyner.util.optimizer import add_hooks
 from pyner.util.optimizer import LearningRateDecay
@@ -14,7 +14,6 @@ from pyner.util.optimizer import LearningRateDecay
 from chainerui.utils import save_args
 from pathlib import Path
 
-import chainer.iterators as It
 import chainer.training as T
 import chainer.training.extensions as E
 
@@ -53,35 +52,9 @@ def prepare_pretrained_word_vector(
     return syn0
 
 
-def create_iterator(vocab, configs, role, transform):
-    if 'iteration' not in configs:
-        raise Exception('Batch configurations are not found')
-
-    if 'external' not in configs:
-        raise Exception('External data configurations are not found')
-
-    iteration_configs = configs['iteration']
-    external_configs = configs['external']
-
-    is_train = role == 'train'
-    shuffle = True if is_train else False
-    repeat = True if is_train else False
-
-    dataset = SequenceLabelingDataset(vocab, external_configs, role, transform)
-    batch_size = iteration_configs['batch_size'] if is_train else len(dataset)
-
-    iterator = It.SerialIterator(
-        dataset,
-        batch_size=batch_size,
-        repeat=repeat,
-        shuffle=shuffle
-    )
-    return iterator
-
-
 if __name__ == '__main__':
     logger = logging.getLogger(__name__)
-    fmt = '%(asctime)s : %(threadName)s : %(levelname)s : %(message)s'
+    fmt = '[%(name)s] %(asctime)s : %(threadName)s : %(levelname)s : %(message)s'  # NOQA
     logging.basicConfig(level=logging.DEBUG, format=fmt)
 
     args = parse_train_args()
@@ -99,10 +72,12 @@ if __name__ == '__main__':
     num_char_vocab = max(vocab.dictionaries['char2idx'].values()) + 1
     num_tag_vocab = max(vocab.dictionaries['tag2idx'].values()) + 1
 
-    model = BiLSTM_CRF(configs,
-                       num_word_vocab,
-                       num_char_vocab,
-                       num_tag_vocab)
+    model = BiLSTM_CRF(
+        configs,
+        num_word_vocab,
+        num_char_vocab,
+        num_tag_vocab
+    )
 
     transformer = DatasetTransformer(vocab)
     transform = transformer.transform
