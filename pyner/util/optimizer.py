@@ -35,6 +35,13 @@ def create_optimizer(configs):
                                     beta1=optimizer_configs['beta1'],
                                     beta2=optimizer_configs['beta2'])
 
+    elif optimizer_ == 'adabound':
+        optimizer = optimizers.Adam(alpha=optimizer_configs['alpha'],
+                                    beta1=optimizer_configs['beta1'],
+                                    beta2=optimizer_configs['beta2'],
+                                    adabound=True,
+                                    final_lr=optimizer_configs['final_lr'])  # NOQA
+
     else:
         raise Exception
 
