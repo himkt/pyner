@@ -1,0 +1,5 @@
+name: 'AdaBound'
+alpha: 0.001
+beta1: 0.99
+beta2: 0.99
+final_lr: 0.01

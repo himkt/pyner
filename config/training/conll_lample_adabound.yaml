@@ -1,0 +1,7 @@
+
+external: "./config/external/conll_with_lample_embeddings.yaml"
+iteration: "./config/iteration/mid.yaml"
+model: "./config/model/lample.yaml"
+optimizer: "./config/optimizer/adabound.yaml"
+preprocessing: "./config/preprocessing/znorm.yaml"
+output: "./model/lample.adabound"
