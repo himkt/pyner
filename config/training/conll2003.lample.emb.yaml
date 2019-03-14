@@ -1,7 +1,7 @@
 
 external: "./config/external/conll_with_lample_embeddings.yaml"
-iteration: "./config/iteration/short.yaml"
+iteration: "./config/iteration/long.yaml"
 model: "./config/model/lample.yaml"
 optimizer: "./config/optimizer/sgd_with_clipping.yaml"
 preprocessing: "./config/preprocessing/znorm.yaml"
-output: "./model/lample_short"
+output: "./model/lample"
