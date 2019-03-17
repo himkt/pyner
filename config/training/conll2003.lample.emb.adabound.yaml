@@ -1,6 +1,5 @@
-
-external: "./config/external/conll_with_lample_embeddings.yaml"
-iteration: "./config/iteration/mid.yaml"
+external: "./config/external/conll2003.lample16emb.yaml"
+iteration: "./config/iteration/long.yaml"
 model: "./config/model/lample.yaml"
 optimizer: "./config/optimizer/adabound.yaml"
 preprocessing: "./config/preprocessing/znorm.yaml"

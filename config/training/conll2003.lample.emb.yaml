@@ -1,7 +1,6 @@
-
-iteration: "./config/iteration/mid.yaml"
-external: "./config/external/conll.yaml"
+external: "./config/external/conll2003.lample16emb.yaml"
+iteration: "./config/iteration/long.yaml"
 model: "./config/model/lample.yaml"
 optimizer: "./config/optimizer/sgd_with_clipping.yaml"
 preprocessing: "./config/preprocessing/znorm.yaml"
-output: "./model/baseline"
+output: "./model/lample"
