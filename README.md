@@ -35,7 +35,7 @@ In Docker container
 
 ```
 # If a GPU is not available, specify `--gpu -1`
-python3 train.py config/training/conll_strong.yaml --gpu 0
+python3 train.py config/training/conll2003.lample.emb.yaml --gpu 0
 ```
 
 This experiment uses CoNLL 2003 dataset.
