@@ -1,4 +1,8 @@
-FROM nvidia/cuda:9.2-cudnn7-devel-ubuntu18.04
+# Dockerfile for himkt/pyner
+
+
+FROM nvidia/cuda:10.1-cudnn7-devel-ubuntu18.04
+
 ENV PYTHONIOENCODING "utf-8"
 ARG GID
 ARG UID
