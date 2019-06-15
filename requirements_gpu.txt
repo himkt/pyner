@@ -1,1 +1,1 @@
-cupy-cuda92==6.0.0b1
+cupy-cuda101==7.0.0a1
