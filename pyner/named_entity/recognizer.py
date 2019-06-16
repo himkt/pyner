@@ -1,3 +1,5 @@
+from itertools import accumulate, chain
+
 from chainer import initializers
 from chainer import reporter
 
@@ -155,67 +157,45 @@ class BiLSTM_CRF(chainer.Chain):
         return pathes
 
     def word_encode(self, word_sentence):
-        word_features = []
-
-        if self.word_dim is not None:
-            wemb = self.embed_word(word_sentence)
-            word_features.append(wemb)
-
-        return F.hstack(word_features)
+        word_features = self.embed_word(word_sentence)
+        return word_features
 
     def char_encode(self, char_inputs, **kwargs):
-        if self.char_dim is None:
-            return
+        batch_size = len(char_inputs)
+        offsets = list(accumulate(len(w) for w in char_inputs))
+        char_embs_flatten = self.embed_char(
+            self.xp.concatenate(char_inputs, axis=0))
+        char_embs = F.split_axis(char_embs_flatten, offsets[:-1], axis=0)
 
-        char_features = []
-        char_embs = []
-        for char_input in char_inputs:
-            # TODO (himkt) remove this hacky workaround
-            # if asarray is not provided,
-            # sometimes char_input.shape be 0-d array
-            char_input = self.xp.asarray(char_input, dtype=self.xp.int32)
-            char_emb = self.embed_char(char_input)
-            char_embs.append(char_emb)
+        h_0, c_0 = self.create_init_state(
+            (2, batch_size, self.char_hidden_dim))
+        hs = self.char_level_bilstm(h_0, c_0, char_embs)[0]
 
-        batch_size = len(char_embs)
-        shape = [2, batch_size, self.char_hidden_dim]
-
-        h_0, c_0 = self.create_init_state(shape)
-        hs, _, _ = self.char_level_bilstm(h_0, c_0, char_embs)
-        _, batch_size, _ = hs.shape
-        hs = hs.transpose([1, 0, 2])
-        hs = hs.reshape(batch_size, -1)
-        char_features.append(hs)
-
-        # final timestep for each sequence
-        return F.hstack(char_features)
+        char_features = hs.transpose((1, 0, 2)).reshape(batch_size, -1)
+        return char_features
 
     def __extract__(self, batch, **kwargs):
         """
         :param batch: list of list, inputs
         inputs: (word_sentences, char_sentences)
         """
+        word_sentences, char_sentences = batch
+        offsets = list(accumulate(len(s) for s in word_sentences))
+
         lstm_inputs = []
+        if self.word_dim is not None:
+            word_repr = self.word_encode(
+                self.xp.concatenate(word_sentences, axis=0))
+            lstm_inputs.append(word_repr)
+        if self.char_dim is not None:
+            char_repr = self.char_encode(
+                list(chain.from_iterable(char_sentences)))
+            lstm_inputs.append(char_repr)
+        lstm_inputs = F.split_axis(
+            F.concat(lstm_inputs, axis=1), offsets[:-1], axis=0)
 
-        for word_sentence, char_sentence in zip(*batch):
-            lstm_input = []
-
-            word_repr = self.word_encode(word_sentence)
-            if word_repr is not None:
-                lstm_input.append(word_repr)
-
-            char_repr = self.char_encode(char_sentence)
-            if char_repr is not None:
-                lstm_input.append(char_repr)
-
-            lstm_input = F.concat(lstm_input, axis=1)
-            lstm_input = F.dropout(lstm_input, self.dropout_rate)
-            lstm_inputs.append(lstm_input)
-
-        batch_size = len(batch[0])
-        shape = [2, batch_size, self.word_hidden_dim]
-
-        h_0, c_0 = self.create_init_state(shape)
-        _, _, hs = self.word_level_bilstm(h_0, c_0, lstm_inputs)
+        h_0, c_0 = self.create_init_state(
+            (2, len(word_sentences), self.word_hidden_dim))
+        hs = self.word_level_bilstm(h_0, c_0, lstm_inputs)[-1]
         features = [self.linear(h) for h in hs]
         return features
