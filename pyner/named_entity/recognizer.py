@@ -146,8 +146,6 @@ class BiLSTM_CRF(chainer.Chain):
     def __call__(self, inputs, outputs, **kwargs):
         features = self.__extract__(inputs, **kwargs)
         loss = self.crf(features, outputs, transpose=True)
-
-        _, pathes = self.crf.argmax(features, transpose=True)
         reporter.report({'loss': loss}, self)
         return loss
 
