@@ -62,7 +62,6 @@ if __name__ == '__main__':
 
     if args.device >= 0:
         chainer.cuda.get_device(args.device).use()
-        chainer.config.use_cudnn = 'never'
 
     set_seed(args.seed, args.device)
 

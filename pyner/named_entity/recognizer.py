@@ -169,9 +169,13 @@ class BiLSTM_CRF(chainer.Chain):
 
         h_0, c_0 = self.create_init_state(
             (2, batch_size, self.char_hidden_dim))
-        hs = self.char_level_bilstm(h_0, c_0, char_embs)[0]
+        hy, _, hs = self.char_level_bilstm(h_0, c_0, char_embs)
 
-        char_features = hs.transpose((1, 0, 2)).reshape(batch_size, -1)
+        if batch_size == 1 and len(char_inputs[0]) == 1:
+            # NOTE: See issue https://github.com/himkt/pyner/issues/38
+            char_features = hs[0]
+        else:
+            char_features = hy.transpose((1, 0, 2)).reshape(batch_size, -1)
         return char_features
 
     def __extract__(self, batch, **kwargs):
