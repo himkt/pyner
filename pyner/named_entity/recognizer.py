@@ -181,15 +181,15 @@ class BiLSTM_CRF(chainer.Chain):
         shape = [2, batch_size, self.char_hidden_dim]
 
         h_0, c_0 = self.create_init_state(shape)
-        hs, _, hy = self.char_level_bilstm(h_0, c_0, char_embs)
-        _, batch_size, _ = hs.shape
+        hy, _, hs = self.char_level_bilstm(h_0, c_0, char_embs)
+        _, batch_size, _ = hy.shape
 
         # NOTE https://github.com/himkt/pyner/pull/39
         if batch_size == 1 and len(char_inputs[0]) == 1:
-            hs = hy[0]
+            hs = hs[0]
         else:
-            hs = hs.transpose([1, 0, 2])
-            hs = hs.reshape(batch_size, -1)
+            hs = hy.transpose([1, 0, 2])
+            hs = hy.reshape(batch_size, -1)
         char_features.append(hs)
 
         # final timestep for each sequence
