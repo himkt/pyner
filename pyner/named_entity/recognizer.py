@@ -5,8 +5,10 @@ import chainer.functions as F
 import chainer.links as L
 import chainer
 import logging
+import os
 
 
+ENABLE_NSTEP_LSTM_TRICK = os.getenv('ENABLE_FASTER_IMPLEMENTATION') == '1'
 logger = logging.getLogger(__name__)
 
 
@@ -22,6 +24,8 @@ class BiLSTM_CRF(chainer.Chain):
                  num_tag_vocab
                  ):
 
+        if ENABLE_NSTEP_LSTM_TRICK:
+            logger.info('USE FASTER IMPLEMENTATION')
         super(BiLSTM_CRF, self).__init__()
         if 'model' not in configs:
             raise Exception('Model configurations are not found')
@@ -185,7 +189,7 @@ class BiLSTM_CRF(chainer.Chain):
         _, batch_size, _ = hy.shape
 
         # NOTE https://github.com/himkt/pyner/pull/39
-        if batch_size == 1 and len(char_inputs[0]) == 1:
+        if ENABLE_NSTEP_LSTM_TRICK and batch_size == 1 and len(char_inputs[0]) == 1:
             hs = hs[0]
         else:
             hs = hy.transpose([1, 0, 2])

@@ -160,8 +160,7 @@ if __name__ == '__main__':
     trainer.extend(E.LogReport(trigger=epoch_trigger))
     trainer.extend(E.PrintReport(entries=entries), trigger=epoch_trigger)
     trainer.extend(E.ProgressBar(update_interval=20))
-    trainer.extend(E.snapshot_object(model, filename=snapshot_filename),
-                   trigger=(1, 'epoch'))
+    # trainer.extend(E.snapshot_object(model, filename=snapshot_filename), trigger=(1, 'epoch'))  # NOQA
 
     if 'learning_rate_decay' in params:
         logger.debug('Enable Learning Rate decay')
