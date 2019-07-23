@@ -1,7 +1,6 @@
 # Dockerfile for himkt/pyner
-
-
 FROM nvidia/cuda:10.1-cudnn7-devel-ubuntu18.04
+
 
 ENV PYTHONIOENCODING "utf-8"
 ARG GID
@@ -28,13 +27,6 @@ RUN pip3 install setuptools --upgrade
 
 
 WORKDIR /tmp/library
-
-COPY requirements.txt requirements.txt
-RUN pip3 install -r requirements.txt -U
-
-COPY requirements_gpu.txt requirements_gpu.txt
-RUN pip3 install -r requirements_gpu.txt -U
-
 COPY setup.py setup.py
 COPY pyner pyner
 RUN pip3 install .
