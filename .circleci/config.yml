@@ -8,7 +8,6 @@ jobs:
       - run:
           name: build using python3.6
           command: |
-            pip3 install -r requirements.txt
             pip3 install .
       - run:
           name: test using python3.6
