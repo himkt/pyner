@@ -72,17 +72,6 @@ class BiLSTM_CRF(chainer.Chain):
         logger.debug(f'Dim of word embeddings: \x1b[31m{self.word_dim}\x1b[0m')  # NOQA
         logger.debug(f'Dim of character embeddings: \x1b[31m{self.char_dim}\x1b[0m')  # NOQA
 
-    def create_init_state(self, shape):
-        h_0_data = self.xp.zeros(shape)
-        self.initializer(h_0_data)
-        h_0_data = h_0_data.astype(self.xp.float32)
-        c_0_data = self.xp.zeros(shape)
-        self.initializer(c_0_data)
-        c_0_data = c_0_data.astype(self.xp.float32)
-        h_0 = chainer.Variable(h_0_data)
-        c_0 = chainer.Variable(c_0_data)
-        return h_0, c_0
-
     def set_pretrained_word_vectors(self, syn0):
         self.embed_word.W.data = syn0
 
@@ -180,8 +169,7 @@ class BiLSTM_CRF(chainer.Chain):
         batch_size = len(char_embs)
         shape = [2, batch_size, self.char_hidden_dim]
 
-        h_0, c_0 = self.create_init_state(shape)
-        hs, _, _ = self.char_level_bilstm(h_0, c_0, char_embs)
+        hs, _, _ = self.char_level_bilstm(None, None, char_embs)
         _, batch_size, _ = hs.shape
         hs = hs.transpose([1, 0, 2])
         hs = hs.reshape(batch_size, -1)
@@ -215,7 +203,6 @@ class BiLSTM_CRF(chainer.Chain):
         batch_size = len(batch[0])
         shape = [2, batch_size, self.word_hidden_dim]
 
-        h_0, c_0 = self.create_init_state(shape)
-        _, _, hs = self.word_level_bilstm(h_0, c_0, lstm_inputs)
+        _, _, hs = self.word_level_bilstm(None, None, lstm_inputs)
         features = [self.linear(h) for h in hs]
         return features
