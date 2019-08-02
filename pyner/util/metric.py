@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import typing
 import operator
 import logging
 import json
@@ -8,17 +9,18 @@ import json
 logger = logging.getLogger(__name__)
 
 
-def select_snapshot(args, model_dir):
-    if args.epoch is None:
-        epoch, max_value = argmax_metric(model_dir / 'log', args.metric)
-        logger.debug(f'Epoch is {epoch:04d} ({args.metric}: {max_value:.2f})')  # NOQA
-        metric_repr = args.metric.replace('/', '.')
-        prediction_path = Path(args.model, f'{metric_repr}.epoch_{epoch:03d}.pred')  # NOQA
+def select_snapshot(
+        epoch: int, metric: typing.Optional[str], model: str, model_dir: str):
+    if epoch is None:
+        epoch, max_value = argmax_metric(model_dir / 'log', metric)
+        logger.debug(f'Epoch is {epoch:04d} ({metric}: {max_value:.2f})')  # NOQA
+        metric_repr = metric.replace('/', '.')
+        prediction_path = Path(model, f'{metric_repr}.epoch_{epoch:03d}.pred')  # NOQA
 
     else:
-        epoch = args.epoch
+        epoch = epoch
         logger.debug(f'Epoch is {epoch:04d} (which is specified manually)')
-        prediction_path = Path(args.model, f'epoch_{epoch:03d}.pred')
+        prediction_path = Path(model, f'epoch_{epoch:03d}.pred')
 
     snapshot_file = f'snapshot_epoch_{epoch:04d}'
     return snapshot_file, prediction_path
