@@ -35,6 +35,7 @@ get-glove:
 
 get-lample:
 	cd data/processed/lample_embeddings && bash download.sh && rm cookie.txt
-	python pyner/tool/vector/word2vec2gensim.py \
+	python pyner/tool/vector/prepare_embeddings.py \
 			data/processed/lample_embeddings/skipngram_100d.txt \
-			data/processed/lample_embeddings/skipngram_100d
+			data/processed/lample_embeddings/skipngram_100d \
+			--format word2vec
