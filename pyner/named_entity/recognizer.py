@@ -159,10 +159,6 @@ class BiLSTM_CRF(chainer.Chain):
         char_features = []
         char_embs = []
         for char_input in char_inputs:
-            # TODO (himkt) remove this hacky workaround
-            # if asarray is not provided,
-            # sometimes char_input.shape be 0-d array
-            char_input = self.xp.asarray(char_input, dtype=self.xp.int32)
             char_emb = self.embed_char(char_input)
             char_embs.append(char_emb)
 
