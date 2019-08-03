@@ -29,13 +29,22 @@ lint:
 	flake8 pyner
 
 get-glove:
-	cd data && wget http://nlp.stanford.edu/data/glove.6B.zip
-	cd data && unzip glove.6B.zip
-	cd data && rm glove.6B.zip
+	mkdir -p data/external/GloveEmbeddings
+	mkdir -p data/processed/GloveEmbeddings
+	cd data/external/GloveEmbeddings && wget http://nlp.stanford.edu/data/glove.6B.zip
+	cd data/external/GloveEmbeddings && unzip glove.6B.zip
+	cd data/external/GloveEmbeddings && rm glove.6B.zip
+	python pyner/tool/vector/prepare_embeddings.py \
+		data/external/GloveEmbeddings/glove.6B.100d.txt \
+		data/processed/GloveEmbeddings/glove.6B.100d \
+		--format glove
 
 get-lample:
-	cd data/processed/lample_embeddings && bash download.sh && rm cookie.txt
+	rm -rf data/external/GloveEmbeddings
+	mkdir -p data/external/LampleEmbeddings
+	mkdir -p data/processed/LampleEmbeddings
+	python pyner/tool/vector/fetch_lample_embedding.py
 	python pyner/tool/vector/prepare_embeddings.py \
-			data/processed/lample_embeddings/skipngram_100d.txt \
-			data/processed/lample_embeddings/skipngram_100d \
+			data/external/LampleEmbeddings/skipngram_100d.txt \
+			data/processed/LampleEmbeddings/skipngram_100d \
 			--format word2vec
