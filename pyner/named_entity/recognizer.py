@@ -108,9 +108,7 @@ class BiLSTM_CRF(chainer.Chain):
         )
 
         self.linear = L.Linear(
-            self.linear_input_dim,
-            self.num_tag_vocab,
-            initialW=self.initializer
+            self.linear_input_dim, self.num_tag_vocab, initialW=self.initializer
         )
 
     def _setup_decoder(self):
