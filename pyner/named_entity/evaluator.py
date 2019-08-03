@@ -8,8 +8,7 @@ from seqeval import metrics
 
 class NamedEntityEvaluator(Evaluator):
     def __init__(self, iterator, target, transform_func, converter, device=-1):
-        super(NamedEntityEvaluator, self).__init__(
-            iterator, target, converter, device)
+        super(NamedEntityEvaluator, self).__init__(iterator, target, converter, device)
 
         self.transform_func = transform_func
         self.device = device
@@ -42,9 +41,7 @@ class NamedEntityEvaluator(Evaluator):
 
                     fscore = metrics.f1_score(t_tag_sentences, p_tag_sentences)
 
-                    reporter.report(
-                        {"loss": target(in_arrays, t_arrays)}, target
-                    )
+                    reporter.report({"loss": target(in_arrays, t_arrays)}, target)
                     reporter.report({"fscore": fscore}, target)
 
             summary.add(observation)

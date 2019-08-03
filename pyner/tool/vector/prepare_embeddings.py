@@ -6,7 +6,7 @@ from gensim.scripts.glove2word2vec import glove2word2vec
 
 
 @click.command()
-@click.argument("input_file",  type=str)  # NOQA
+@click.argument("input_file", type=str)  # NOQA
 @click.argument("output_file", type=str)
 @click.option("--format", default="word2vec", type=str)
 def main(input_file: str, output_file: str, format: str):

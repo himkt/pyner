@@ -10,19 +10,20 @@ logger = logging.getLogger(__name__)
 
 
 def select_snapshot(
-        epoch: int, metric: typing.Optional[str], model: str, model_dir: str):
+    epoch: int, metric: typing.Optional[str], model: str, model_dir: str
+):
     if epoch is None:
-        epoch, max_value = argmax_metric(model_dir / 'log', metric)
-        logger.debug(f'Epoch is {epoch:04d} ({metric}: {max_value:.2f})')  # NOQA
-        metric_repr = metric.replace('/', '.')
-        prediction_path = Path(model, f'{metric_repr}.epoch_{epoch:03d}.pred')  # NOQA
+        epoch, max_value = argmax_metric(model_dir / "log", metric)
+        logger.debug(f"Epoch is {epoch:04d} ({metric}: {max_value:.2f})")  # NOQA
+        metric_repr = metric.replace("/", ".")
+        prediction_path = Path(model, f"{metric_repr}.epoch_{epoch:03d}.pred")  # NOQA
 
     else:
         epoch = epoch
-        logger.debug(f'Epoch is {epoch:04d} (which is specified manually)')
-        prediction_path = Path(model, f'epoch_{epoch:03d}.pred')
+        logger.debug(f"Epoch is {epoch:04d} (which is specified manually)")
+        prediction_path = Path(model, f"epoch_{epoch:03d}.pred")
 
-    snapshot_file = f'snapshot_epoch_{epoch:04d}'
+    snapshot_file = f"snapshot_epoch_{epoch:04d}"
     return snapshot_file, prediction_path
 
 
@@ -39,7 +40,7 @@ def argmax_metric(log_file, metric):
     documents = json.load(open(log_file))
     for document in documents:
         value = document[metric]
-        epoch = document['epoch']
+        epoch = document["epoch"]
 
         if op(value, best_value):
             best_epoch = epoch
@@ -49,8 +50,8 @@ def argmax_metric(log_file, metric):
 
 
 def prepare_op(metric):
-    ge_metrics = ['accuracy', 'precision', 'recall', 'fscore']
-    le_metrics = ['loss']
+    ge_metrics = ["accuracy", "precision", "recall", "fscore"]
+    le_metrics = ["loss"]
 
     for ge_metric in ge_metrics:
         if ge_metric in metric:

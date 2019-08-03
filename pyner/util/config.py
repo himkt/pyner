@@ -3,20 +3,20 @@ import yaml
 
 class ConfigParser:
     def __init__(self):
-        self.__name__ = 'config'
+        self.__name__ = "config"
 
     @classmethod
     def parse(cls, config_path):
-        with open(config_path, encoding='utf-8') as config_file:
+        with open(config_path, encoding="utf-8") as config_file:
             config_dictionary = yaml.load(config_file)
 
         key2dictionary = {}
         for key, config_path in config_dictionary.items():
-            if not config_path.endswith('.yaml'):
+            if not config_path.endswith(".yaml"):
                 key2dictionary[key] = config_path
 
             else:
-                config = open(config_path, encoding='utf-8')
+                config = open(config_path, encoding="utf-8")
                 key2dictionary[key] = yaml.load(config)
                 config.close()
 

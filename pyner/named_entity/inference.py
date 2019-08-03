@@ -30,8 +30,7 @@ def run_inference(model: str, epoch: int, device: str, metric: str):
     configs = json.load(open(model_dir / "args"))
 
     metric = metric.replace("/", ".")
-    snapshot_file, prediction_path = select_snapshot(
-        epoch, metric, model, model_dir)
+    snapshot_file, prediction_path = select_snapshot(epoch, metric, model, model_dir)
     logger.debug(f"creat prediction into {prediction_path}")
 
     vocab = Vocabulary.prepare(configs)

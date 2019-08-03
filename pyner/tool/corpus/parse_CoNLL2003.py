@@ -2,8 +2,7 @@ import logging
 import pathlib
 
 import click
-from pyner.tool.corpus.common import (CorpusParser, enum, write_sentences,
-                                      write_vocab)
+from pyner.tool.corpus.common import CorpusParser, enum, write_sentences, write_vocab
 
 SEED = 42
 BOS = 0  # begin of step
@@ -45,9 +44,7 @@ def main(data_dir: str, output_dir: str, format: str):
     test_word_sentences, test_tag_sentences = corpus_parser.parse_file(
         data_path / "eng.iob.testb", word_idx=0
     )
-    test_words, test_chars, test_tags = enum(
-        test_word_sentences, test_tag_sentences
-    )
+    test_words, test_chars, test_tags = enum(test_word_sentences, test_tag_sentences)
 
     # NOTE create vocabularies only using training dataset
     words = train_words
