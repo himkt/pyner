@@ -1,7 +1,6 @@
-from pathlib import Path
 import logging
 import re
-
+from pathlib import Path
 
 SPECIAL_SYMBOLS = ["<UNK>", "<PAD>"]
 FIELDS_ALL = ["word", "char", "tag"]

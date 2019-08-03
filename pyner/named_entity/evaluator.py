@@ -1,7 +1,6 @@
 import copy
 
-from chainer import function
-from chainer import reporter
+from chainer import function, reporter
 from chainer.training.extensions import Evaluator
 from seqeval import metrics
 

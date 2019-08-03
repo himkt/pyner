@@ -1,10 +1,9 @@
+import logging
 from pathlib import Path
 
-import chainer.dataset as D
 import chainer.cuda
-import logging
+import chainer.dataset as D
 import numpy as np
-
 
 logger = logging.getLogger(__name__)
 

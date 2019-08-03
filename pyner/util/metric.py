@@ -1,10 +1,8 @@
-from pathlib import Path
-
-import typing
-import operator
-import logging
 import json
-
+import logging
+import operator
+import typing
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 

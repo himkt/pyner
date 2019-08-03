@@ -1,9 +1,7 @@
-from chainer import optimizer_hooks
-from chainer import optimizers
-from chainer import training
-import numpy
 import logging
 
+import numpy
+from chainer import optimizer_hooks, optimizers, training
 
 logger = logging.getLogger(__name__)
 

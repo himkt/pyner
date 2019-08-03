@@ -1,8 +1,8 @@
-import chainer
 import logging
-import numpy
 import random
 
+import chainer
+import numpy
 
 logger = logging.getLogger(__name__)
 

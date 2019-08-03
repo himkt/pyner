@@ -1,6 +1,6 @@
-from pyner.named_entity.dataset import SequenceLabelingDataset
-
 import chainer.iterators as It
+
+from pyner.named_entity.dataset import SequenceLabelingDataset
 
 
 def create_iterator(vocab, configs, role, transform):

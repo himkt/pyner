@@ -1,11 +1,9 @@
-from chainer import initializers
-from chainer import reporter
-
-import chainer.functions as F
-import chainer.links as L
-import chainer
 import logging
 
+import chainer
+import chainer.functions as F
+import chainer.links as L
+from chainer import initializers, reporter
 
 logger = logging.getLogger(__name__)
 
@@ -63,11 +61,9 @@ class BiLSTM_CRF(chainer.Chain):
             self._setup_feature_extractor()
             self._setup_decoder()
 
-        logger.debug(f"Dropout rate: \x1b[31m{self.dropout_rate}\x1b[0m")  # NOQA
-        logger.debug(f"Dim of word embeddings: \x1b[31m{self.word_dim}\x1b[0m")  # NOQA
-        logger.debug(
-            f"Dim of character embeddings: \x1b[31m{self.char_dim}\x1b[0m"
-        )  # NOQA
+        logger.debug(f"Dropout rate: \x1b[31m{self.dropout_rate}\x1b[0m")
+        logger.debug(f"Word embedding dim: \x1b[31m{self.word_dim}\x1b[0m")
+        logger.debug(f"Char embedding dim: \x1b[31m{self.char_dim}\x1b[0m")
 
     def set_pretrained_word_vectors(self, syn0):
         self.embed_word.W.data = syn0
@@ -112,7 +108,9 @@ class BiLSTM_CRF(chainer.Chain):
         )
 
         self.linear = L.Linear(
-            self.linear_input_dim, self.num_tag_vocab, initialW=self.initializer
+            self.linear_input_dim,
+            self.num_tag_vocab,
+            initialW=self.initializer
         )
 
     def _setup_decoder(self):
@@ -150,9 +148,6 @@ class BiLSTM_CRF(chainer.Chain):
             char_emb = self.embed_char(char_input)
             char_embs.append(char_emb)
 
-        batch_size = len(char_embs)
-        shape = [2, batch_size, self.char_hidden_dim]
-
         hs, _, _ = self.char_level_bilstm(None, None, char_embs)
         _, batch_size, _ = hs.shape
         hs = hs.transpose([1, 0, 2])
@@ -183,9 +178,6 @@ class BiLSTM_CRF(chainer.Chain):
             lstm_input = F.concat(lstm_input, axis=1)
             lstm_input = F.dropout(lstm_input, self.dropout_rate)
             lstm_inputs.append(lstm_input)
-
-        batch_size = len(batch[0])
-        shape = [2, batch_size, self.word_hidden_dim]
 
         _, _, hs = self.word_level_bilstm(None, None, lstm_inputs)
         features = [self.linear(h) for h in hs]
