@@ -1,8 +1,6 @@
-from pyner.tool.corpus.common import CorpusParser
-from pyner.tool.corpus.common import enum
-
 import unittest
 
+from pyner.tool.corpus.common import CorpusParser, bio2bioes, enum, iob2bio
 
 TEST_CoNLL2003_1 = '''\
 -DOCSTART- -X- O O
@@ -18,6 +16,9 @@ Baghdad      NNP  I-NP  I-LOC
 
 WORDS_CoNLL_1 = 'U.N. official Ekeus heads for Baghdad .'.split(' ')  # NOQA
 TAGS_CoNLL_1 = 'I-ORG O I-PER O O I-LOC O'.split(' ')  # NOQA
+TEST_IOB1 = ['I-PER', 'I-ORG', 'I-ORG', 'B-ORG', 'O']
+TEST_BIO1 = ['B-PER', 'B-ORG', 'I-ORG', 'B-ORG', 'O']
+TEST_BIOES1 = ['S-PER', 'B-ORG', 'E-ORG', 'S-ORG', 'O']
 
 
 class TestEnumerate(unittest.TestCase):
@@ -42,3 +43,14 @@ class TestParser(unittest.TestCase):
         print(word_sentences)
         self.assertEqual(word_sentences, [WORDS_CoNLL_1])
         self.assertEqual(tag_sentences, [TAGS_CoNLL_1])
+
+
+class TestTagSchemeConverter(unittest.TestCase):
+    def test_iob2bio1(self):
+        self.assertEqual(iob2bio(TEST_IOB1), TEST_BIO1)
+
+    def test_bio2bioes1(self):
+        self.assertEqual(bio2bioes(iob2bio(TEST_BIO1)), TEST_BIOES1)
+
+    def test_iob2bioes1(self):
+        self.assertEqual(bio2bioes(iob2bio(TEST_IOB1)), TEST_BIOES1)

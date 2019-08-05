@@ -1,9 +1,7 @@
-from chainer import optimizer_hooks
-from chainer import optimizers
-from chainer import training
-import numpy
 import logging
 
+import numpy
+from chainer import optimizer_hooks, optimizers, training
 
 logger = logging.getLogger(__name__)
 
@@ -13,34 +11,37 @@ def create_optimizer(configs):
     :param optimizer_config: dict, 学習のパラメータを含む辞書
     """
 
-    if 'optimizer' not in configs:
-        raise Exception('Optimizer configurations are not found')
+    if "optimizer" not in configs:
+        raise Exception("Optimizer configurations are not found")
 
-    optimizer_configs = configs['optimizer']
-    optimizer_ = optimizer_configs['name']
+    optimizer_configs = configs["optimizer"]
+    optimizer_ = optimizer_configs["name"]
     optimizer_ = optimizer_.lower()
 
-    if optimizer_ == 'sgd':
-        optimizer = optimizers.SGD(lr=optimizer_configs['learning_rate'])
+    if optimizer_ == "sgd":
+        optimizer = optimizers.SGD(lr=optimizer_configs["learning_rate"])
 
-    elif optimizer_ == 'momentumsgd':
-        optimizer = optimizers.MomentumSGD(
-            lr=optimizer_configs['learning_rate'])
+    elif optimizer_ == "momentumsgd":
+        optimizer = optimizers.MomentumSGD(lr=optimizer_configs["learning_rate"])
 
-    elif optimizer_ == 'adadelta':
+    elif optimizer_ == "adadelta":
         optimizer = optimizers.AdaDelta()
 
-    elif optimizer_ == 'adam':
-        optimizer = optimizers.Adam(alpha=optimizer_configs['alpha'],
-                                    beta1=optimizer_configs['beta1'],
-                                    beta2=optimizer_configs['beta2'])
+    elif optimizer_ == "adam":
+        optimizer = optimizers.Adam(
+            alpha=optimizer_configs["alpha"],
+            beta1=optimizer_configs["beta1"],
+            beta2=optimizer_configs["beta2"],
+        )
 
-    elif optimizer_ == 'adabound':
-        optimizer = optimizers.Adam(alpha=optimizer_configs['alpha'],
-                                    beta1=optimizer_configs['beta1'],
-                                    beta2=optimizer_configs['beta2'],
-                                    adabound=True,
-                                    final_lr=optimizer_configs['final_lr'])  # NOQA
+    elif optimizer_ == "adabound":
+        optimizer = optimizers.Adam(
+            alpha=optimizer_configs["alpha"],
+            beta1=optimizer_configs["beta1"],
+            beta2=optimizer_configs["beta2"],
+            adabound=True,
+            final_lr=optimizer_configs["final_lr"],
+        )  # NOQA
 
     else:
         raise Exception
@@ -53,24 +54,23 @@ def add_hooks(optimizer, configs):
     :param optimizer: chainer.Optimizer, chainerのオプティマイザ
     :param configs: pyner.util.config.ConfigParser
     """
-    if 'optimizer' not in configs:
-        raise Exception('Optimizer configurations are not found')
+    if "optimizer" not in configs:
+        raise Exception("Optimizer configurations are not found")
 
-    optimizer_configs = configs['optimizer']
+    optimizer_configs = configs["optimizer"]
 
-    if optimizer_configs.get('weight_decay'):
-        logger.debug('\x1b[31mSet weight decay\x1b[0m')
-        optimizer.add_hook(optimizer_hooks.WeightDecay(
-            optimizer_configs['weight_decay']))
-
-    if 'gradient_clipping' in optimizer_configs:
-        clipping_threshold = optimizer_configs['gradient_clipping']
-        msg = 'Enable gradient clipping:'
-        msg += f' threshold \x1b[31m{clipping_threshold}\x1b[0m'
-        logger.debug(msg)
+    if optimizer_configs.get("weight_decay"):
+        logger.debug("\x1b[31mSet weight decay\x1b[0m")
         optimizer.add_hook(
-            optimizer_hooks.GradientClipping(clipping_threshold)
+            optimizer_hooks.WeightDecay(optimizer_configs["weight_decay"])
         )
+
+    if "gradient_clipping" in optimizer_configs:
+        clipping_threshold = optimizer_configs["gradient_clipping"]
+        msg = "Enable gradient clipping:"
+        msg += f" threshold \x1b[31m{clipping_threshold}\x1b[0m"
+        logger.debug(msg)
+        optimizer.add_hook(optimizer_hooks.GradientClipping(clipping_threshold))
 
     return optimizer
 
@@ -97,10 +97,10 @@ class LearningRateDecay(training.extension.Extension):
             attribute. If it is ``None``, the main optimizer of the updater is
             used.
     """
+
     invoke_before_training = True
 
-    def __init__(self, attr, rate, decay, target=None,
-                 optimizer=None):
+    def __init__(self, attr, rate, decay, target=None, optimizer=None):
         self._attr = attr
         self._rate = rate
         self._decay = decay
@@ -137,13 +137,13 @@ class LearningRateDecay(training.extension.Extension):
         self._update_value(optimizer, value)
 
     def serialize(self, serializer):
-        self._t = serializer('_t', self._t)
-        self._last_value = serializer('_last_value', self._last_value)
+        self._t = serializer("_t", self._t)
+        self._last_value = serializer("_last_value", self._last_value)
         if isinstance(self._last_value, numpy.ndarray):
             self._last_value = self._last_value.item()
 
     def _get_optimizer(self, trainer):
-        return self._optimizer or trainer.updater.get_optimizer('main')
+        return self._optimizer or trainer.updater.get_optimizer("main")
 
     def _update_value(self, optimizer, value):
         setattr(optimizer, self._attr, value)

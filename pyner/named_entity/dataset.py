@@ -1,22 +1,21 @@
+import logging
 from pathlib import Path
 
-import chainer.dataset as D
 import chainer.cuda
-import logging
+import chainer.dataset as D
 import numpy as np
-
 
 logger = logging.getLogger(__name__)
 
 
 def update_instances(train_datas, params, attr):
-    train_size = params.get('train_size', 1.0)
+    train_size = params.get("train_size", 1.0)
     if train_size <= 0 or 1 <= train_size:
-        assert Exception('train_size must be in (0, 1]')
+        assert Exception("train_size must be in (0, 1]")
     n_train = len(train_datas[0])
     instances = int(train_size * n_train)
     rate = 100 * train_size
-    logger.debug(f'Use {instances} example for {attr} ({rate:.2f}%)')
+    logger.debug(f"Use {instances} example for {attr} ({rate:.2f}%)")
     return [t[:instances] for t in train_datas]
 
 
@@ -36,9 +35,9 @@ def converter(batch, device=-1):
 
 class DatasetTransformer:
     def __init__(self, vocab):
-        self.word2idx = vocab.dictionaries['word2idx']
-        self.char2idx = vocab.dictionaries['char2idx']
-        self.tag2idx = vocab.dictionaries['tag2idx']
+        self.word2idx = vocab.dictionaries["word2idx"]
+        self.char2idx = vocab.dictionaries["char2idx"]
+        self.tag2idx = vocab.dictionaries["tag2idx"]
 
         self.idx2word = {idx: word for word, idx in self.word2idx.items()}
         self.idx2tag = {idx: tag for tag, idx in self.tag2idx.items()}
@@ -46,14 +45,16 @@ class DatasetTransformer:
 
     @staticmethod
     def _to_id(elems, dictionary):
-        unk_id = dictionary.get('<UNK>')
+        unk_id = dictionary.get("<UNK>")
         es = [dictionary.get(e, unk_id) for e in elems]
         return es
 
     def transform(self, word_sentence, tag_sentence):
         wordid_sentence = self._to_id(word_sentence, self.word2idx)
         tagid_sentence = self._to_id(tag_sentence, self.tag2idx)
-        charid_sentence = [self._to_id(cs, self.char2idx) for cs in word_sentence]  # NOQA
+        charid_sentence = [
+            self._to_id(cs, self.char2idx) for cs in word_sentence
+        ]  # NOQA
         return wordid_sentence, charid_sentence, tagid_sentence
 
     def itransform(self, wordid_sentences, tagid_sentences):
@@ -77,9 +78,9 @@ class DatasetTransformer:
 
 class SequenceLabelingDataset(D.DatasetMixin):
     def __init__(self, vocab, params, attr, transform):
-        data_path = Path(params['data_dir'])
-        word_path = data_path / f'{attr}.words.txt'
-        tag_path = data_path / f'{attr}.tags.txt'
+        data_path = Path(params["data_dir"])
+        word_path = data_path / f"{attr}.words.txt"
+        tag_path = data_path / f"{attr}.tags.txt"
         word_sentences = vocab.load_word_sentences(word_path)
         tag_sentences = vocab.load_tag_sentences(tag_path)
         datas = [word_sentences, tag_sentences]
