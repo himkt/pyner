@@ -83,7 +83,8 @@ def run_training(config: str, device: int, seed: int):
 
         word2idx = vocab.dictionaries["word2idx"]
         syn0 = prepare_pretrained_word_vector(
-            word2idx, vocab.gensim_model, syn0, num_word_vocab)
+            word2idx, vocab.gensim_model, syn0, num_word_vocab
+        )
         model.set_pretrained_word_vectors(syn0)
 
     train_iterator = create_iterator(vocab, configs, "train", transform)
