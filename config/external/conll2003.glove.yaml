@@ -1,0 +1,10 @@
+# training data
+data_dir: "./data/processed/CoNLL2003_BIOES"
+
+# pre-trained word vectors
+word_vector: "./data/processed/GloveEmbeddings/glove.6B.100d"
+
+# [optional] specify the way to merge the two vocabularies
+#   1: vocabulary consists of words appear in training data
+#   2: vocabulary consists of words exists in pre-trained word vectors
+vocab_merge_operator: "union"
