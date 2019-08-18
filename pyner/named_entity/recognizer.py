@@ -161,8 +161,9 @@ class BiLSTM_CRF(chainer.Chain):
                 self.xp.concatenate(word_sentences, axis=0))
             lstm_inputs.append(word_repr)
         if self.char_dim is not None:
-            char_repr = self.char_encode(
-                list(chain.from_iterable(char_sentences)))
+            # NOTE [[list[int]]] -> [list[int]]
+            flatten_char_sentences = list(chain.from_iterable(char_sentences))
+            char_repr = self.char_encode(flatten_char_sentences)
             lstm_inputs.append(char_repr)
         lstm_inputs = F.split_axis(
             F.concat(lstm_inputs, axis=1), offsets[:-1], axis=0)
