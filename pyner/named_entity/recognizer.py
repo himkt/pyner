@@ -159,11 +159,13 @@ class BiLSTM_CRF(chainer.Chain):
         if self.word_dim is not None:
             word_repr = self.word_encode(
                 self.xp.concatenate(word_sentences, axis=0))
+            word_repr = F.dropout(word_repr, self.dropout_rate)
             lstm_inputs.append(word_repr)
         if self.char_dim is not None:
             # NOTE [[list[int]]] -> [list[int]]
             flatten_char_sentences = list(chain.from_iterable(char_sentences))
             char_repr = self.char_encode(flatten_char_sentences)
+            char_repr = F.dropout(char_repr, self.dropout_rate)
             lstm_inputs.append(char_repr)
         lstm_inputs = F.split_axis(
             F.concat(lstm_inputs, axis=1), offsets[:-1], axis=0)
