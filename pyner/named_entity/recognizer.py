@@ -10,12 +10,57 @@ from chainer import initializers, reporter
 logger = logging.getLogger(__name__)
 
 
+class CharLSTM_Encoder(chainer.Chain):
+    def __init__(
+        self,
+        n_char_vocab: int,
+        n_layers: int,
+        char_dim: int,
+        hidden_dim: int,
+        dropout_rate: float,
+        char_initializer=None
+    ):
+        super(CharLSTM_Encoder, self).__init__()
+
+        with self.init_scope():
+            self.char_embed = L.EmbedID(
+                n_char_vocab,
+                char_dim,
+                initialW=char_initializer
+            )
+
+            self.char_level_bilstm = L.NStepBiLSTM(
+                n_layers,
+                char_dim,
+                hidden_dim,
+                dropout_rate
+            )
+
+    def forward(self, char_inputs):
+        batch_size = len(char_inputs)
+        offsets = list(accumulate(len(w) for w in char_inputs))
+        char_embs_flatten = self.char_embed(
+            self.xp.concatenate(char_inputs, axis=0))
+        char_embs = F.split_axis(char_embs_flatten, offsets[:-1], axis=0)
+
+        hs, _, _ = self.char_level_bilstm(None, None, char_embs)
+        char_features = hs.transpose((1, 0, 2))
+        char_features = char_features.reshape(batch_size, -1)
+        return char_features
+
+
 class BiLSTM_CRF(chainer.Chain):
     """
     BiLSTM-CRF: Bidirectional LSTM + Conditional Random Field as a decoder
     """
 
-    def __init__(self, configs, num_word_vocab, num_char_vocab, num_tag_vocab):
+    def __init__(
+            self,
+            configs,
+            num_word_vocab,
+            num_char_vocab,
+            num_tag_vocab
+    ):
 
         super(BiLSTM_CRF, self).__init__()
         if "model" not in configs:
@@ -76,7 +121,9 @@ class BiLSTM_CRF(chainer.Chain):
 
         logger.debug("Use word level encoder")
         self.embed_word = L.EmbedID(
-            self.num_word_vocab, self.word_dim, initialW=self.initializer
+            self.num_word_vocab,
+            self.word_dim,
+            initialW=self.initializer
         )
 
     def _setup_char_encoder(self):
@@ -84,18 +131,15 @@ class BiLSTM_CRF(chainer.Chain):
             return
 
         logger.debug("Use character level encoder")
-        self.embed_char = L.EmbedID(
-            self.num_char_vocab, self.char_dim, initialW=self.initializer
-        )
-
-        self.internal_hidden_dim += 2 * self.char_hidden_dim
-
-        self.char_level_bilstm = L.NStepBiLSTM(
+        self.char_level_encoder = CharLSTM_Encoder(
+            self.num_char_vocab,
             self.num_char_hidden_layers,
             self.char_dim,
             self.char_hidden_dim,
             self.dropout_rate,
+            char_initializer=self.initializer,
         )
+        self.internal_hidden_dim += 2 * self.char_hidden_dim
 
     def _setup_feature_extractor(self):
         # ref: https://github.com/glample/tagger/blob/master/model.py#L256
@@ -118,7 +162,7 @@ class BiLSTM_CRF(chainer.Chain):
     def _setup_decoder(self):
         self.crf = L.CRF1d(self.num_tag_vocab, initial_cost=self.initializer)
 
-    def __call__(self, inputs, outputs, **kwargs):
+    def forward(self, inputs, outputs, **kwargs):
         features = self.__extract__(inputs, **kwargs)
         loss = self.crf(features, outputs, transpose=True)
 
@@ -132,20 +176,10 @@ class BiLSTM_CRF(chainer.Chain):
         return pathes
 
     def word_encode(self, word_sentence):
-        word_features = self.embed_word(word_sentence)
-        return word_features
+        return self.embed_word(word_sentence)
 
     def char_encode(self, char_inputs, **kwargs):
-        batch_size = len(char_inputs)
-        offsets = list(accumulate(len(w) for w in char_inputs))
-        char_embs_flatten = self.embed_char(
-            self.xp.concatenate(char_inputs, axis=0))
-        char_embs = F.split_axis(char_embs_flatten, offsets[:-1], axis=0)
-
-        hs, _, _ = self.char_level_bilstm(None, None, char_embs)
-        char_features = hs.transpose((1, 0, 2))
-        char_features = char_features.reshape(batch_size, -1)
-        return char_features
+        return self.char_level_encoder(char_inputs)
 
     def __extract__(self, batch, **kwargs):
         """
