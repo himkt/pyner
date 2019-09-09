@@ -36,11 +36,12 @@ class CharLSTM_Encoder(chainer.Chain):
                 dropout_rate
             )
 
-    def forward(self, char_inputs):
-        batch_size = len(char_inputs)
-        offsets = list(accumulate(len(w) for w in char_inputs))
-        char_embs_flatten = self.char_embed(
-            self.xp.concatenate(char_inputs, axis=0))
+    def forward(self, char_sentences):
+        flatten_char_sentences = list(chain.from_iterable(char_sentences))
+        batch_size = len(flatten_char_sentences)
+
+        offsets = list(accumulate(len(w) for w in flatten_char_sentences))
+        char_embs_flatten = self.char_embed(self.xp.concatenate(flatten_char_sentences, axis=0))  # NOQA
         char_embs = F.split_axis(char_embs_flatten, offsets[:-1], axis=0)
 
         hs, _, _ = self.char_level_bilstm(None, None, char_embs)
@@ -175,12 +176,6 @@ class BiLSTM_CRF(chainer.Chain):
         _, pathes = self.crf.argmax(features, transpose=True)
         return pathes
 
-    def word_encode(self, word_sentence):
-        return self.embed_word(word_sentence)
-
-    def char_encode(self, char_inputs, **kwargs):
-        return self.char_level_encoder(char_inputs)
-
     def __extract__(self, batch, **kwargs):
         """
         :param batch: list of list, inputs
@@ -191,19 +186,17 @@ class BiLSTM_CRF(chainer.Chain):
 
         lstm_inputs = []
         if self.word_dim is not None:
-            word_repr = self.word_encode(
-                self.xp.concatenate(word_sentences, axis=0))
+            word_repr = self.embed_word(self.xp.concatenate(word_sentences, axis=0))  # NOQA
             word_repr = F.dropout(word_repr, self.dropout_rate)
             lstm_inputs.append(word_repr)
+
         if self.char_dim is not None:
-            # NOTE [[list[int]]] -> [list[int]]
-            flatten_char_sentences = list(chain.from_iterable(char_sentences))
-            char_repr = self.char_encode(flatten_char_sentences)
+            # NOTE [[list[int]]
+            char_repr = self.char_level_encoder(char_sentences)
             char_repr = F.dropout(char_repr, self.dropout_rate)
             lstm_inputs.append(char_repr)
-        lstm_inputs = F.split_axis(
-            F.concat(lstm_inputs, axis=1), offsets[:-1], axis=0)
 
+        lstm_inputs = F.split_axis(F.concat(lstm_inputs, axis=1), offsets[:-1], axis=0)  # NOQA
         _, _, hs = self.word_level_bilstm(None, None, lstm_inputs)
         features = [self.linear(h) for h in hs]
         return features
