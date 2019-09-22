@@ -6,6 +6,7 @@ import chainer.functions as F
 import chainer.links as L
 from chainer import initializers, reporter
 
+from pyner.named_entity.nn import CharCNN_Encoder
 from pyner.named_entity.nn import CharLSTM_Encoder
 
 logger = logging.getLogger(__name__)
@@ -93,7 +94,8 @@ class BiLSTM_CRF(chainer.Chain):
             return
 
         logger.debug("Use character level encoder")
-        self.char_level_encoder = CharLSTM_Encoder(
+        ## self.char_level_encoder = CharLSTM_Encoder(
+        self.char_level_encoder = CharCNN_Encoder(
             self.num_char_vocab,
             self.num_char_hidden_layers,
             self.char_dim,
@@ -152,8 +154,9 @@ class BiLSTM_CRF(chainer.Chain):
             lstm_inputs.append(word_repr)
 
         if self.char_dim is not None:
-            # NOTE [[list[int]]
+            # (batch, word_len, char_len]
             char_repr = self.char_level_encoder(char_sentences)
+            # (batch*word_len, char_hidden_dim)
             char_repr = F.dropout(char_repr, self.dropout_rate)
             lstm_inputs.append(char_repr)
 
