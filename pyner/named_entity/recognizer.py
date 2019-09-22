@@ -1,53 +1,14 @@
 import logging
 from itertools import accumulate
-from itertools import chain
 
 import chainer
 import chainer.functions as F
 import chainer.links as L
 from chainer import initializers, reporter
 
+from pyner.named_entity.nn import CharLSTM_Encoder
+
 logger = logging.getLogger(__name__)
-
-
-class CharLSTM_Encoder(chainer.Chain):
-    def __init__(
-        self,
-        n_char_vocab: int,
-        n_layers: int,
-        char_dim: int,
-        hidden_dim: int,
-        dropout_rate: float,
-        char_initializer=None
-    ):
-        super(CharLSTM_Encoder, self).__init__()
-
-        with self.init_scope():
-            self.char_embed = L.EmbedID(
-                n_char_vocab,
-                char_dim,
-                initialW=char_initializer
-            )
-
-            self.char_level_bilstm = L.NStepBiLSTM(
-                n_layers,
-                char_dim,
-                hidden_dim,
-                dropout_rate
-            )
-
-    def forward(self, char_sentences):
-        flatten_char_sentences = list(chain.from_iterable(char_sentences))
-        batch_size = len(flatten_char_sentences)
-
-        offsets = list(accumulate(len(w) for w in flatten_char_sentences))
-        char_embs_flatten = self.char_embed(self.xp.concatenate(flatten_char_sentences, axis=0))  # NOQA
-        char_embs = F.split_axis(char_embs_flatten, offsets[:-1], axis=0)
-
-        hs, _, _ = self.char_level_bilstm(None, None, char_embs)
-        char_features = hs.transpose((1, 0, 2))
-        char_features = char_features.reshape(batch_size, -1)
-        return char_features
 
 
 class BiLSTM_CRF(chainer.Chain):
@@ -148,20 +109,20 @@ class BiLSTM_CRF(chainer.Chain):
         self.linear_input_dim += 2 * self.word_hidden_dim
 
         self.word_level_bilstm = L.NStepBiLSTM(
-            self.num_word_hidden_layers,
-            self.internal_hidden_dim,
-            self.word_hidden_dim,
-            self.dropout_rate,
-        )
+            n_layers=self.num_word_hidden_layers,
+            in_size=self.internal_hidden_dim,
+            out_size=self.word_hidden_dim,
+            dropout=self.dropout_rate)
 
         self.linear = L.Linear(
-            self.linear_input_dim,
-            self.num_tag_vocab,
-            initialW=self.initializer
-        )
+            in_size=self.linear_input_dim,
+            out_size=self.num_tag_vocab,
+            initialW=self.initializer)
 
     def _setup_decoder(self):
-        self.crf = L.CRF1d(self.num_tag_vocab, initial_cost=self.initializer)
+        self.crf = L.CRF1d(
+            n_label=self.num_tag_vocab,
+            initial_cost=self.initializer)
 
     def forward(self, inputs, outputs, **kwargs):
         features = self.__extract__(inputs, **kwargs)
