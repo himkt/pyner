@@ -1,11 +1,12 @@
 import logging
 from itertools import accumulate
-from itertools import chain
 
 import chainer
 import chainer.functions as F
 import chainer.links as L
 from chainer import initializers, reporter
+
+from pyner.named_entity.nn import CharLSTM_Encoder
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +16,13 @@ class BiLSTM_CRF(chainer.Chain):
     BiLSTM-CRF: Bidirectional LSTM + Conditional Random Field as a decoder
     """
 
-    def __init__(self, configs, num_word_vocab, num_char_vocab, num_tag_vocab):
+    def __init__(
+            self,
+            configs,
+            num_word_vocab,
+            num_char_vocab,
+            num_tag_vocab
+    ):
 
         super(BiLSTM_CRF, self).__init__()
         if "model" not in configs:
@@ -76,7 +83,9 @@ class BiLSTM_CRF(chainer.Chain):
 
         logger.debug("Use word level encoder")
         self.embed_word = L.EmbedID(
-            self.num_word_vocab, self.word_dim, initialW=self.initializer
+            self.num_word_vocab,
+            self.word_dim,
+            initialW=self.initializer
         )
 
     def _setup_char_encoder(self):
@@ -84,18 +93,15 @@ class BiLSTM_CRF(chainer.Chain):
             return
 
         logger.debug("Use character level encoder")
-        self.embed_char = L.EmbedID(
-            self.num_char_vocab, self.char_dim, initialW=self.initializer
-        )
-
-        self.internal_hidden_dim += 2 * self.char_hidden_dim
-
-        self.char_level_bilstm = L.NStepBiLSTM(
+        self.char_level_encoder = CharLSTM_Encoder(
+            self.num_char_vocab,
             self.num_char_hidden_layers,
             self.char_dim,
             self.char_hidden_dim,
             self.dropout_rate,
+            char_initializer=self.initializer,
         )
+        self.internal_hidden_dim += 2 * self.char_hidden_dim
 
     def _setup_feature_extractor(self):
         # ref: https://github.com/glample/tagger/blob/master/model.py#L256
@@ -103,22 +109,22 @@ class BiLSTM_CRF(chainer.Chain):
         self.linear_input_dim += 2 * self.word_hidden_dim
 
         self.word_level_bilstm = L.NStepBiLSTM(
-            self.num_word_hidden_layers,
-            self.internal_hidden_dim,
-            self.word_hidden_dim,
-            self.dropout_rate,
-        )
+            n_layers=self.num_word_hidden_layers,
+            in_size=self.internal_hidden_dim,
+            out_size=self.word_hidden_dim,
+            dropout=self.dropout_rate)
 
         self.linear = L.Linear(
-            self.linear_input_dim,
-            self.num_tag_vocab,
-            initialW=self.initializer
-        )
+            in_size=self.linear_input_dim,
+            out_size=self.num_tag_vocab,
+            initialW=self.initializer)
 
     def _setup_decoder(self):
-        self.crf = L.CRF1d(self.num_tag_vocab, initial_cost=self.initializer)
+        self.crf = L.CRF1d(
+            n_label=self.num_tag_vocab,
+            initial_cost=self.initializer)
 
-    def __call__(self, inputs, outputs, **kwargs):
+    def forward(self, inputs, outputs, **kwargs):
         features = self.__extract__(inputs, **kwargs)
         loss = self.crf(features, outputs, transpose=True)
 
@@ -131,22 +137,6 @@ class BiLSTM_CRF(chainer.Chain):
         _, pathes = self.crf.argmax(features, transpose=True)
         return pathes
 
-    def word_encode(self, word_sentence):
-        word_features = self.embed_word(word_sentence)
-        return word_features
-
-    def char_encode(self, char_inputs, **kwargs):
-        batch_size = len(char_inputs)
-        offsets = list(accumulate(len(w) for w in char_inputs))
-        char_embs_flatten = self.embed_char(
-            self.xp.concatenate(char_inputs, axis=0))
-        char_embs = F.split_axis(char_embs_flatten, offsets[:-1], axis=0)
-
-        hs, _, _ = self.char_level_bilstm(None, None, char_embs)
-        char_features = hs.transpose((1, 0, 2))
-        char_features = char_features.reshape(batch_size, -1)
-        return char_features
-
     def __extract__(self, batch, **kwargs):
         """
         :param batch: list of list, inputs
@@ -157,19 +147,17 @@ class BiLSTM_CRF(chainer.Chain):
 
         lstm_inputs = []
         if self.word_dim is not None:
-            word_repr = self.word_encode(
-                self.xp.concatenate(word_sentences, axis=0))
+            word_repr = self.embed_word(self.xp.concatenate(word_sentences, axis=0))  # NOQA
             word_repr = F.dropout(word_repr, self.dropout_rate)
             lstm_inputs.append(word_repr)
+
         if self.char_dim is not None:
-            # NOTE [[list[int]]] -> [list[int]]
-            flatten_char_sentences = list(chain.from_iterable(char_sentences))
-            char_repr = self.char_encode(flatten_char_sentences)
+            # NOTE [[list[int]]
+            char_repr = self.char_level_encoder(char_sentences)
             char_repr = F.dropout(char_repr, self.dropout_rate)
             lstm_inputs.append(char_repr)
-        lstm_inputs = F.split_axis(
-            F.concat(lstm_inputs, axis=1), offsets[:-1], axis=0)
 
+        lstm_inputs = F.split_axis(F.concat(lstm_inputs, axis=1), offsets[:-1], axis=0)  # NOQA
         _, _, hs = self.word_level_bilstm(None, None, lstm_inputs)
         features = [self.linear(h) for h in hs]
         return features
