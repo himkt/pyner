@@ -6,9 +6,10 @@ try:
     import subprocess
 
     nvcc_version = subprocess.check_output("nvcc --version", shell=True)
-    cuda_version = (
-        nvcc_version.decode("utf-8").split("\n")[-2].split(",")[-2].split(" ")[-1]  # NOQA
-    )  # NOQA
+    cuda_version = nvcc_version.decode("utf-8") \
+        .split("\n")[-2] \
+        .split(",")[-2]  \
+        .split(" ")[-1]
     cuda_version = cuda_version.replace(".", "")  # 10.0 -> 100
     cupy_version = "cupy-cuda{}==7.0.0b2".format(cuda_version)
 except Exception:
@@ -17,8 +18,8 @@ except Exception:
 
 install_requires = []
 
-install_requires.append("gensim==3.6.0")
-install_requires.append("numpy==1.15.4")
+install_requires.append("gensim==3.7.3")
+install_requires.append("numpy==1.17.0")
 install_requires.append("scikit-learn==0.21.2")
 install_requires.append("seqeval==0.0.5")
 install_requires.append("chainer==7.0.0b2")
