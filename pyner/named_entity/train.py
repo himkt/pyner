@@ -51,14 +51,13 @@ def prepare_pretrained_word_vector(
 @click.option("--device", type=int, default=-1)
 @click.option("--seed", type=int, default=31)
 def run_training(config: str, device: int, seed: int):
+    configs = ConfigParser.parse(config)
     params = yaml.load(open(config, encoding="utf-8"))
 
     if device >= 0:
         chainer.cuda.get_device(device).use()
 
     set_seed(seed, device)
-
-    configs = ConfigParser.parse(config)
 
     vocab = Vocabulary.prepare(configs)
     num_word_vocab = max(vocab.dictionaries["word2idx"].values()) + 1
@@ -88,7 +87,7 @@ def run_training(config: str, device: int, seed: int):
         model.set_pretrained_word_vectors(syn0)
 
     train_iterator = create_iterator(vocab, configs, "train", transform)
-    valid_iterator = create_iterator(vocab, configs, "validation", transform)
+    valid_iterator = create_iterator(vocab, configs, "valid", transform)
     test_iterator = create_iterator(vocab, configs, "test", transform)
 
     if device >= 0:

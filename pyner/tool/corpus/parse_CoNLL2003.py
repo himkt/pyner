@@ -34,11 +34,11 @@ def main(data_dir: str, output_dir: str, format: str):
     )
 
     logging.info("parsing corpus for validating")
-    validation_word_sentences, validation_tag_sentences = corpus_parser.parse_file(  # NOQA
+    valid_word_sentences, valid_tag_sentences = corpus_parser.parse_file(  # NOQA
         data_path / "eng.iob.testa", word_idx=0
     )
-    validation_words, validation_chars, validation_tags = enum(
-        validation_word_sentences, validation_tag_sentences
+    valid_words, valid_chars, valid_tags = enum(
+        valid_word_sentences, valid_tag_sentences
     )
 
     logging.info("parsing corpus for testing")
@@ -57,8 +57,8 @@ def main(data_dir: str, output_dir: str, format: str):
             ))
         elif mode == "valid":
             sentences = list(zip(
-                validation_word_sentences,
-                validation_tag_sentences,
+                valid_word_sentences,
+                valid_tag_sentences,
             ))
         elif mode == "test":
             sentences = list(zip(
