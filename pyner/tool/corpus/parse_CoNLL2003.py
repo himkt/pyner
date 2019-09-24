@@ -40,7 +40,7 @@ def main(data_dir: str, output_dir: str, convert_rule: str, delimiter: str):
     valid_word_sentences, valid_tag_sentences = corpus_parser.parse_file(  # NOQA
         data_path / "eng.iob.testa", word_idx=0
     )
-    valid_words, valid_chars, valid_tags = enum(
+    _, _, valid_tags = enum(
         valid_word_sentences, valid_tag_sentences
     )
 
@@ -48,7 +48,7 @@ def main(data_dir: str, output_dir: str, convert_rule: str, delimiter: str):
     test_word_sentences, test_tag_sentences = corpus_parser.parse_file(
         data_path / "eng.iob.testb", word_idx=0
     )
-    test_words, test_chars, test_tags = enum(
+    _, _, test_tags = enum(
         test_word_sentences, test_tag_sentences
     )
 
@@ -69,12 +69,13 @@ def main(data_dir: str, output_dir: str, convert_rule: str, delimiter: str):
                 test_tag_sentences,
             ))
 
-        logging.info(f"Create {mode} dataset")
+        logging.info("Create %s dataset", mode)
         write_sentences(mode, sentences, output_path)
 
     # NOTE create vocabularies only using training dataset
     logging.info("Create vocabulary")
-    vocab, char_vocab, tag_vocab = train_words, train_chars, train_tags
+    vocab, char_vocab = train_words, train_chars
+    tag_vocab = train_tags + valid_tags + test_tags
     write_vocab("words", vocab, output_path)
     write_vocab("chars", char_vocab, output_path)
     write_vocab("tags", tag_vocab, output_path)
