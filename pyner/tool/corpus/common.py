@@ -157,9 +157,10 @@ def write_vocab(prefix, elems, output_path):
 
 
 class CorpusParser:
-    def __init__(self, format_str=None):
-        if format_str:
-            in_format, out_format = format_str.split("2")
+    def __init__(self, convert_rule, delimiter):
+        self.delimiter = delimiter
+        if convert_rule:
+            in_format, out_format = convert_rule.split("2")
             self.format_func_list = get_word_format_func(in_format, out_format)
 
         else:
@@ -181,9 +182,10 @@ class CorpusParser:
         tag_sentence = []
 
         for line in document:
-            line = line.rstrip("\n")
-            pattern = re.compile(" +")
-            elems = re.split(pattern, line)
+            line = line \
+                .rstrip(" ") \
+                .rstrip("\n")
+            elems = re.split(self.delimiter, line)
 
             if line.startswith("-DOCSTART-"):
                 continue
