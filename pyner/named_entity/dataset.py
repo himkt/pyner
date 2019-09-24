@@ -8,15 +8,20 @@ import numpy as np
 logger = logging.getLogger(__name__)
 
 
-def update_instances(train_datas, params, attr):
+def update_instances(train_datas, params, mode):
     train_size = params.get("train_size", 1.0)
     if train_size <= 0 or 1 <= train_size:
         assert Exception("train_size must be in (0, 1]")
-    n_train = len(train_datas[0])
-    instances = int(train_size * n_train)
+
     rate = 100 * train_size
-    logger.debug(f"Use {instances} example for {attr} ({rate:.2f}%)")
-    return [t[:instances] for t in train_datas]
+    n_instances = int(train_size * len(train_datas))
+    logger.debug(f"Use {n_instances} example for {mode} ({rate:.2f}%)")
+
+    result = [[] for _ in train_datas[0][0]]
+    for instance in train_datas[:n_instances]:
+        for index, sentence in enumerate(list(zip(*instance))):
+            result[index].append(sentence)
+    return result
 
 
 def converter(batch, device=-1):
@@ -77,14 +82,11 @@ class DatasetTransformer:
 
 
 class SequenceLabelingDataset(D.DatasetMixin):
-    def __init__(self, vocab, params, attr, transform):
-        data_path = Path(params["data_dir"])
-        word_path = data_path / f"{attr}.words.txt"
-        tag_path = data_path / f"{attr}.tags.txt"
-        word_sentences = vocab.load_word_sentences(word_path)
-        tag_sentences = vocab.load_tag_sentences(tag_path)
-        datas = [word_sentences, tag_sentences]
-        word_sentences, tag_sentences = update_instances(datas, params, attr)
+    def __init__(self, vocab, params, mode, transform):
+        data_dir = Path(params["data_dir"])
+        data_path = data_dir / f"{mode}.txt"
+        datas = vocab.load_word_sentences(data_path)
+        word_sentences, tag_sentences = update_instances(datas, params, mode)
         self.word_sentences = word_sentences
         self.tag_sentences = tag_sentences
 

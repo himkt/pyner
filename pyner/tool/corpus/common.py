@@ -141,11 +141,13 @@ def enum(word_sentences, tag_sentences):
     return words, chars, tags
 
 
-def write_sentences(prefix, elem, prefix_elem_sentences, output_path):
-    target = output_path / f"{prefix}.{elem}.txt"
+def write_sentences(mode, sentences, output_path):
+    target = output_path / f"{mode}.txt"
     with open(target, "w") as file:
-        for _elem_sentence in prefix_elem_sentences:
-            print(" ".join(_elem_sentence), file=file)
+        for sentence in sentences:
+            for token in zip(*sentence):
+                print("\t".join(token), file=file)
+            print("", file=file)
 
 
 def write_vocab(prefix, elems, output_path):

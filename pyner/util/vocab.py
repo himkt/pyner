@@ -109,13 +109,22 @@ class Vocabulary:
         return vocab
 
     def load_word_sentences(self, file):
-        sentences = []
+        sentences, sentence = [], []
         with open(file, encoding="utf-8") as file:
             for line in file:
+                if line == "\n":
+                    if sentence:
+                        sentences.append(sentence)
+                        sentence = []
+                        continue
+
                 line = line.rstrip("\n")
-                words = line.split(" ")
-                words = self._process(words)
-                sentences.append(words)
+                word, *others = line.split("\t")
+                word = self._process([word])
+                sentence.append(word + others)
+
+        if sentence:
+            sentences.append(sentence)
         return sentences
 
     def load_tag_sentences(self, file):

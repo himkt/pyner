@@ -6,9 +6,9 @@ from pyner.tool.corpus.common import (CorpusParser, enum, write_sentences,
                                       write_vocab)
 
 SEED = 42
-BOS = 0  # begin of step
-EOS = 1  # end  of step
-XXX = 2  # other
+BOS  = 0  # begin of step
+EOS  = 1  # end  of step
+XXX  = 2  # other
 
 
 @click.command()
@@ -34,11 +34,11 @@ def main(data_dir: str, output_dir: str, format: str):
     )
 
     logging.info("parsing corpus for validating")
-    validation_word_sentences, validation_tag_sentences = corpus_parser.parse_file(  # NOQA
+    valid_word_sentences, valid_tag_sentences = corpus_parser.parse_file(  # NOQA
         data_path / "eng.iob.testa", word_idx=0
     )
-    validation_words, validation_chars, validation_tags = enum(
-        validation_word_sentences, validation_tag_sentences
+    valid_words, valid_chars, valid_tags = enum(
+        valid_word_sentences, valid_tag_sentences
     )
 
     logging.info("parsing corpus for testing")
@@ -49,29 +49,32 @@ def main(data_dir: str, output_dir: str, format: str):
         test_word_sentences, test_tag_sentences
     )
 
+    for mode in ["train", "valid", "test"]:
+        if mode == "train":
+            sentences = list(zip(
+                train_word_sentences,
+                train_tag_sentences,
+            ))
+        elif mode == "valid":
+            sentences = list(zip(
+                valid_word_sentences,
+                valid_tag_sentences,
+            ))
+        elif mode == "test":
+            sentences = list(zip(
+                test_word_sentences,
+                test_tag_sentences,
+            ))
+
+        logging.info(f"Create {mode} dataset")
+        write_sentences(mode, sentences, output_path)
+
     # NOTE create vocabularies only using training dataset
-    words = train_words
-    chars = train_chars
-    tags = train_tags
-
-    logging.info("Create training dataset")
-    write_sentences("train", "words", train_word_sentences, output_path)
-    write_sentences("train", "tags", train_tag_sentences, output_path)
-
-    logging.info("Create validating dataset")
-    write_sentences(
-        "validation", "words", validation_word_sentences, output_path
-    )  # NOQA
-    write_sentences("validation", "tags", validation_tag_sentences, output_path)  # NOQA
-
-    logging.info("Create testing dataset")
-    write_sentences("test", "words", test_word_sentences, output_path)
-    write_sentences("test", "tags", test_tag_sentences, output_path)
-
     logging.info("Create vocabulary")
-    write_vocab("words", words, output_path)
-    write_vocab("chars", chars, output_path)
-    write_vocab("tags", tags, output_path)
+    vocab, char_vocab, tag_vocab = train_words, train_chars, train_tags
+    write_vocab("words", vocab, output_path)
+    write_vocab("chars", char_vocab, output_path)
+    write_vocab("tags", tag_vocab, output_path)
 
 
 if __name__ == "__main__":
