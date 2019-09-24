@@ -2,8 +2,10 @@ import logging
 import pathlib
 
 import click
-from pyner.tool.corpus.common import (CorpusParser, enum, write_sentences,
-                                      write_vocab)
+from pyner.tool.corpus.common import CorpusParser
+from pyner.tool.corpus.common import enum
+from pyner.tool.corpus.common import write_sentences
+from pyner.tool.corpus.common import write_vocab
 
 SEED = 42
 BOS  = 0  # begin of step

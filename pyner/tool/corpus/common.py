@@ -181,7 +181,7 @@ class CorpusParser:
         tag_sentence = []
 
         for line in document:
-            line = line.rstrip()
+            line = line.rstrip("\n")
             pattern = re.compile(" +")
             elems = re.split(pattern, line)
 
