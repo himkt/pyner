@@ -49,12 +49,12 @@ class BiLSTM_CRF(chainer.Chain):
         self.num_word_hidden_layers = 1  # same as Lample
         self.word_hidden_dim = model_configs.get("word_hidden_dim")
 
->         # additional features (classifier)
->         self.classifier = params.get('classifier')
->         self.classifier_output = params.get('classifier::output')
->         self.classifier_usage = params.get('classifier::usage', 'lstm')
->         self.metric = params.get('classifier::metric')
->         self.fine_tune = params.get('classifier::fine_tune', 'embedding')
+        # additional features (classifier)
+        self.classifier = params.get('classifier')
+        self.classifier_output = params.get('classifier::output')
+        self.classifier_usage = params.get('classifier::usage', 'lstm')
+        self.metric = params.get('classifier::metric')
+        self.fine_tune = params.get('classifier::fine_tune', 'embedding')
 
         # transformer
         self.linear_input_dim = 0
