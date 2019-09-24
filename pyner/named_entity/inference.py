@@ -67,6 +67,7 @@ def run_inference(model: str, epoch: Optional[int], device: str, metric: str):
             sentence_gen = zip(word_sentences, t_tag_sentences, p_tag_sentences)  # NOQA
             for ws, ts, ps in sentence_gen:
                 for w, t, p in zip(ws, ts, ps):
+                    w = w.replace(" ", "<WHITESPACE>")
                     print(f"{w} {t} {p}", file=file)
                 print(file=file)
 
