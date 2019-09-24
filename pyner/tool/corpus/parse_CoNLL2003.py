@@ -16,9 +16,9 @@ XXX  = 2  # other
 @click.command()
 @click.option("--data-dir", default="./data/external/CoNLL2003", type=str)
 @click.option("--output-dir", default="./data/processed/CoNLL2003", type=str)
-@click.option("--format", default="iob2bio", type=str)
+@click.option("--convert-rule", default="iob2bio", type=str)
 @click.option("--delimiter", default=r" +", type=str)
-def main(data_dir: str, output_dir: str, format: str, delimiter: str):
+def main(data_dir: str, output_dir: str, convert_rule: str, delimiter: str):
     logging.info("create dataset for CoNLL2003")
 
     data_path = pathlib.Path(data_dir)
@@ -26,7 +26,7 @@ def main(data_dir: str, output_dir: str, format: str, delimiter: str):
     output_path.mkdir(exist_ok=True, parents=True)
 
     logging.info("create corpus parser")
-    corpus_parser = CorpusParser(format, delimiter)
+    corpus_parser = CorpusParser(convert_rule, delimiter)
 
     logging.info("parsing corpus for training")
     train_word_sentences, train_tag_sentences = corpus_parser.parse_file(

@@ -157,10 +157,10 @@ def write_vocab(prefix, elems, output_path):
 
 
 class CorpusParser:
-    def __init__(self, format_str=None, delimiter=r" +"):
+    def __init__(self, convert_rule, delimiter):
         self.delimiter = delimiter
-        if format_str:
-            in_format, out_format = format_str.split("2")
+        if convert_rule:
+            in_format, out_format = convert_rule.split("2")
             self.format_func_list = get_word_format_func(in_format, out_format)
 
         else:
