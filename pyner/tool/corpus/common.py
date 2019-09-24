@@ -182,7 +182,9 @@ class CorpusParser:
         tag_sentence = []
 
         for line in document:
-            line = line.rstrip("\n")
+            line = line \
+                .rstrip(" ") \
+                .rstrip("\n")
             elems = re.split(self.delimiter, line)
 
             if line.startswith("-DOCSTART-"):
