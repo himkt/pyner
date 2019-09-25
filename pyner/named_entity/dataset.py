@@ -9,11 +9,16 @@ logger = logging.getLogger(__name__)
 
 
 def update_instances(train_datas, params, mode):
-    train_size = params.get("train_size", 1.0)
+    if mode == "train":
+        train_size = params.get("train_size", 1.0)
+        rate = 100 * train_size
+    else:
+        train_size = 1.0
+        rate = 100
+
     if train_size <= 0 or 1 <= train_size:
         assert Exception("train_size must be in (0, 1]")
 
-    rate = 100 * train_size
     n_instances = int(train_size * len(train_datas))
     logger.debug(f"Use {n_instances} example for {mode} ({rate:.2f}%)")
 
