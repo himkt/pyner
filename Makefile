@@ -48,3 +48,8 @@ get-lample:
 			data/external/LampleEmbeddings/skipngram_100d.txt \
 			data/processed/LampleEmbeddings/skipngram_100d \
 			--format word2vec
+
+get-conlleval:
+	curl https://www.clips.uantwerpen.be/conll2000/chunking/conlleval.txt > conlleval
+	chmod 777 conlleval
+

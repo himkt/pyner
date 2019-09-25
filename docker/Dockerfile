@@ -2,7 +2,10 @@
 FROM nvidia/cuda:10.1-cudnn7-devel-ubuntu18.04
 
 
-ENV PYTHONIOENCODING "utf-8"
+ENV PYTHONIOENCODING UTF-8
+ENV LC_ALL           C.UTF-8
+ENV LANG             C.UTF-8
+
 ARG GID
 ARG UID
 
@@ -45,12 +48,10 @@ RUN echo 'Defaults visiblepw'             >> /etc/sudoers
 RUN echo 'docker ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
 
+USER docker
 WORKDIR /home/docker
 
 COPY data data
 COPY config config
 COPY pyner/named_entity/train.py train.py
 COPY pyner/tool tool
-
-
-USER docker
