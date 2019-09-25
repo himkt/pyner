@@ -125,6 +125,7 @@ $ python pyner/tool/corpus/parse_CoNLL2003.py \
 2019-09-24 23:44:06,705 INFO root :Create valid dataset
 2019-09-24 23:44:06,755 INFO root :Create test dataset
 2019-09-24 23:44:06,800 INFO root :Create vocabulary
+$
 $ tree data/processed/CoNLL2003_BIOES
 data/processed/CoNLL2003_BIOES
 ├── test.txt
@@ -155,6 +156,10 @@ python pyner/tool/vector/prepare_embeddings.py \
                 data/processed/LampleEmbeddings/skipngram_100d \
                 --format word2vec
 saved model
+$
+$ ls -1 data/processed/LampleEmbeddings
+skipngram_100d
+skipngram_100d.vectors.npy
 ```
 
 Congratulations! All preparation steps have done.
@@ -183,29 +188,18 @@ output: "./model/conll2003.lample"  # model dir is here!!
 If you successfully train the model, some files are generated on `model/conll2003.lample.skipngram.YYYY-MM-DDTxx:xx:xx.xxxxxx`.
 
 ```
-$ ls model/conll2003.lample.skipngram.2019-09-24T07:02:33.536822
-args                 snapshot_epoch_0021  snapshot_epoch_0043  snapshot_epoch_0065  snapshot_epoch_0087  snapshot_epoch_0109  snapshot_epoch_0131
-log                  snapshot_epoch_0022  snapshot_epoch_0044  snapshot_epoch_0066  snapshot_epoch_0088  snapshot_epoch_0110  snapshot_epoch_0132
-snapshot_epoch_0001  snapshot_epoch_0023  snapshot_epoch_0045  snapshot_epoch_0067  snapshot_epoch_0089  snapshot_epoch_0111  snapshot_epoch_0133
-snapshot_epoch_0002  snapshot_epoch_0024  snapshot_epoch_0046  snapshot_epoch_0068  snapshot_epoch_0090  snapshot_epoch_0112  snapshot_epoch_0134
-snapshot_epoch_0003  snapshot_epoch_0025  snapshot_epoch_0047  snapshot_epoch_0069  snapshot_epoch_0091  snapshot_epoch_0113  snapshot_epoch_0135
-snapshot_epoch_0004  snapshot_epoch_0026  snapshot_epoch_0048  snapshot_epoch_0070  snapshot_epoch_0092  snapshot_epoch_0114  snapshot_epoch_0136
-snapshot_epoch_0005  snapshot_epoch_0027  snapshot_epoch_0049  snapshot_epoch_0071  snapshot_epoch_0093  snapshot_epoch_0115  snapshot_epoch_0137
-snapshot_epoch_0006  snapshot_epoch_0028  snapshot_epoch_0050  snapshot_epoch_0072  snapshot_epoch_0094  snapshot_epoch_0116  snapshot_epoch_0138
-snapshot_epoch_0007  snapshot_epoch_0029  snapshot_epoch_0051  snapshot_epoch_0073  snapshot_epoch_0095  snapshot_epoch_0117  snapshot_epoch_0139
-snapshot_epoch_0008  snapshot_epoch_0030  snapshot_epoch_0052  snapshot_epoch_0074  snapshot_epoch_0096  snapshot_epoch_0118  snapshot_epoch_0140
-snapshot_epoch_0009  snapshot_epoch_0031  snapshot_epoch_0053  snapshot_epoch_0075  snapshot_epoch_0097  snapshot_epoch_0119  snapshot_epoch_0141
-snapshot_epoch_0010  snapshot_epoch_0032  snapshot_epoch_0054  snapshot_epoch_0076  snapshot_epoch_0098  snapshot_epoch_0120  snapshot_epoch_0142
-snapshot_epoch_0011  snapshot_epoch_0033  snapshot_epoch_0055  snapshot_epoch_0077  snapshot_epoch_0099  snapshot_epoch_0121  snapshot_epoch_0143
-snapshot_epoch_0012  snapshot_epoch_0034  snapshot_epoch_0056  snapshot_epoch_0078  snapshot_epoch_0100  snapshot_epoch_0122  snapshot_epoch_0144
-snapshot_epoch_0013  snapshot_epoch_0035  snapshot_epoch_0057  snapshot_epoch_0079  snapshot_epoch_0101  snapshot_epoch_0123  snapshot_epoch_0145
-snapshot_epoch_0014  snapshot_epoch_0036  snapshot_epoch_0058  snapshot_epoch_0080  snapshot_epoch_0102  snapshot_epoch_0124  snapshot_epoch_0146
-snapshot_epoch_0015  snapshot_epoch_0037  snapshot_epoch_0059  snapshot_epoch_0081  snapshot_epoch_0103  snapshot_epoch_0125  snapshot_epoch_0147
-snapshot_epoch_0016  snapshot_epoch_0038  snapshot_epoch_0060  snapshot_epoch_0082  snapshot_epoch_0104  snapshot_epoch_0126  snapshot_epoch_0148
-snapshot_epoch_0017  snapshot_epoch_0039  snapshot_epoch_0061  snapshot_epoch_0083  snapshot_epoch_0105  snapshot_epoch_0127  snapshot_epoch_0149
-snapshot_epoch_0018  snapshot_epoch_0040  snapshot_epoch_0062  snapshot_epoch_0084  snapshot_epoch_0106  snapshot_epoch_0128  snapshot_epoch_0150
-snapshot_epoch_0019  snapshot_epoch_0041  snapshot_epoch_0063  snapshot_epoch_0085  snapshot_epoch_0107  snapshot_epoch_0129  validation.main.fscore.epoch_031.pred
-snapshot_epoch_0020  snapshot_epoch_0042  snapshot_epoch_0064  snapshot_epoch_0086  snapshot_epoch_0108  snapshot_epoch_0130
+$ ls -1 model/conll2003.lample.skipngram.2019-09-24T07:02:33.536822
+args               
+log                
+snapshot_epoch_0001
+snapshot_epoch_0002
+snapshot_epoch_0003
+snapshot_epoch_0004
+...
+snapshot_epoch_0148
+snapshot_epoch_0149
+snapshot_epoch_0150
+validation.main.fscore.epoch_031.pred  # here!!
 ```
 
 Running `python3 pyner/named_entity/inference.py` will generate prediction results on `model/conll2003.lample.skipngram.YYYY-MM-DDTxx:xx:xx.xxxxxx`
