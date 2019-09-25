@@ -1,6 +1,7 @@
 <div align="center"><img src="./static/image/pyner.png" width="600"/></div>
 
-# PyNER: Extensible implementation of Named Entity Recognizer
+
+# PyNER: Toolkit for sequence labeling in Chainer
 
 [![CircleCI](https://circleci.com/gh/himkt/pyner.svg?style=svg)](https://circleci.com/gh/himkt/pyner)
 [![GitHub stars](https://img.shields.io/github/stars/himkt/pyner.svg?maxAge=2592000&colorB=blue)](https://github.com/himkt/pyner/stargazers)
@@ -8,12 +9,30 @@
 [![GitHub release](https://img.shields.io/github/release/himkt/pyner.svg?maxAge=2592000&colorB=yellow)](https://github.com/himkt/pyner)
 [![MIT License](http://img.shields.io/badge/license-MIT-green.svg?style=flat)](LICENSE)
 
-PyNER is a chainer implementation for neural named entity recognizer.
-It is designed so that users can define arbitrary module (e.g. LSTM, CNN, ...).
-PyNER also provides Dataset class and Evaluator class suited to sequence labeling tasks.
+PyNER is a sequence labeling toolkit that allows researcher and developer to
+train/evaluate neural sequence labeling methods.
 
 
-### QuickStart
+# QuickStart
+
+You can try `pyner` on a local machine or a docker container.
+
+## 1. Local Machine
+
+- setup
+
+```
+pip3 install .
+```
+
+- train
+
+```
+# If a GPU is not available, specify `--gpu -1`
+python3 pyner/named_entity/train.py config/training/conll2003.lample.yaml --device 0
+```
+
+## 2. Docker container
 
 - build container
 
@@ -29,30 +48,49 @@ make start
 make start SUDO=  # if you are not administrator
 ```
 
-In Docker container
+- train
 
-- run experiments
+You have to execute this command in Docker container.
 
 ```
 # If a GPU is not available, specify `--gpu -1`
-python3 train.py config/training/conll2003.lample.emb.yaml --gpu 0
+python3 train.py config/training/conll2003.lample.yaml --device 0
 ```
 
 This experiment uses CoNLL 2003 dataset.
 Please read the following "Prepare dataset" section.
 
 
-### Prepare dataset
+# Prepare dataset
 
-Dataset format is the same as https://github.com/guillaumegenthial/tf_ner/tree/master/data/example
+We use a data format same as [deep-crf](https://github.com/aonotas/deep-crf).
 
-If you want to reproduce the result of Lample's NER tagger on CoNLL 2003,
-first of all, you have to prepare CoNLL 2003 dataset.
+```
+$ head -n 15 data/processed/CoNLL2003_BIOES/train.txt
+EU      S-ORG
+rejects O
+German  S-MISC
+call    O
+to      O
+boycott O
+British S-MISC
+lamb    O
+.       O
 
-#### Using CoNLL 2003 Dataset
+Peter   B-PER
+Blackburn       E-PER
 
-PyNER offers the way to create dataset from CoNLL 2003 dataset
-*You have to prepare [CoNLL2003] dataset because it is not allowed to distribute.*
+BRUSSELS        S-LOC
+1996-08-22      O
+```
+
+For reproducing results in [Lample's paper](https://aclweb.org/anthology/N16-1030),
+you have to do some step to prepare datasets.
+
+## 1. Prepare CoNLL 2003 Dataset
+
+We can't include CoNLL 2003 dataset in this repository due to legal limitation.
+Instead, PyNER offers the way to create dataset from CoNLL 2003 dataset
 
 If you could prepare CoNLL 2003 dataset, you would have three files like below.
 
@@ -60,34 +98,141 @@ If you could prepare CoNLL 2003 dataset, you would have three files like below.
 - eng.iob.testb
 - eng.iob.train
 
-Please put them to the same directoy (e.g. `datasets`).
-Dataset structure is like below.
+Please put them to on same directoy (e.g. `data/external/conll2003`).
 
 ```
-datasets
+$ tree data/external/conll2003
+data/external/conll2003
 ├── eng.iob.testa
 ├── eng.iob.testb
 └── eng.iob.train
 ```
 
 Then, you can create the dataset for pyner by following command.
+After running the command, `./data/processed/CoNLL2003_BIOES` will be generated for you.
 
 ```
-python pyner/tool/corpus/parse_CoNLL2003.py \
-  --data-dir [path_to_datasets] \
-  --output-dir data/processed/CoNLL2003_BIOES \
-  --format iob2bioes
+$ python pyner/tool/corpus/parse_CoNLL2003.py \
+  --data-dir     data/external/conll2003 \
+  --output-dir   data/processed/CoNLL2003_BIOES \
+  --convert-rule iob2bioes
+2019-09-24 23:43:39,299 INFO root :create dataset for CoNLL2003
+2019-09-24 23:43:39,299 INFO root :create corpus parser
+2019-09-24 23:43:39,300 INFO root :parsing corpus for training
+2019-09-24 23:44:02,240 INFO root :parsing corpus for validating
+2019-09-24 23:44:04,397 INFO root :parsing corpus for testing
+2019-09-24 23:44:06,507 INFO root :Create train dataset
+2019-09-24 23:44:06,705 INFO root :Create valid dataset
+2019-09-24 23:44:06,755 INFO root :Create test dataset
+2019-09-24 23:44:06,800 INFO root :Create vocabulary
+$ tree data/processed/CoNLL2003_BIOES
+data/processed/CoNLL2003_BIOES
+├── test.txt
+├── train.txt
+├── valid.txt
+├── vocab.chars.txt
+├── vocab.tags.txt
+└── vocab.words.txt
 ```
 
-After running the command, `./data/processed/CoNLL2003_BIOES` is generated for you!
 
-
-#### Use Lample's Embeddings
+## 2. Prepare pre-trained Word Embeddings used in Lample's paper
 
 Using pre-trained word embeddings significantly improve the performance of NER.
 Lample et al. also use pre-trained word embeddings.
 They use Skip-N-Gram embeddings, which can be downloaded from [Official repo's issue].
 To use this, please run `make get-lample` before running `make build`.
+(If you want to use GloVe embeddings, please run `make get-glove`.)
+
+```
+$ make get-lample
+rm -rf data/external/GloveEmbeddings
+mkdir -p data/external/LampleEmbeddings
+mkdir -p data/processed/LampleEmbeddings
+python pyner/tool/vector/fetch_lample_embedding.py
+python pyner/tool/vector/prepare_embeddings.py \
+                data/external/LampleEmbeddings/skipngram_100d.txt \
+                data/processed/LampleEmbeddings/skipngram_100d \
+                --format word2vec
+saved model
+```
+
+Congratulations! All preparation steps have done.
+Now you can train the Lample's LSTM-CRF.
+Please run the command:
+- Local machine: `python3 pyner/named_entity/train.py config/training/conll2003.lample.yaml --device 0`
+- Docker container: `python3 train.py config/training/conll2003.lample.yaml --device 0`
+
+
+# Inference and Evaluate
+
+You can test your model using `pyner/named_entity/inference.py`.
+Only thing you have to pass to `inference.py` is path to model dir.
+Model dir is defined in config file (**output**).
+
+```
+$ cat config/training/conll2003.lample.yaml
+iteration: "./config/iteration/long.yaml"
+external: "./config/external/conll2003.yaml"
+model: "./config/model/lample.yaml"
+optimizer: "./config/optimizer/sgd_with_clipping.yaml"
+preprocessing: "./config/preprocessing/znorm.yaml"
+output: "./model/conll2003.lample"  # model dir is here!!
+```
+
+If you successfully train the model, some files are generated on `model/conll2003.lample.skipngram.YYYY-MM-DDTxx:xx:xx.xxxxxx`.
+
+```
+$ ls model/conll2003.lample.skipngram.2019-09-24T07:02:33.536822
+args                 snapshot_epoch_0021  snapshot_epoch_0043  snapshot_epoch_0065  snapshot_epoch_0087  snapshot_epoch_0109  snapshot_epoch_0131
+log                  snapshot_epoch_0022  snapshot_epoch_0044  snapshot_epoch_0066  snapshot_epoch_0088  snapshot_epoch_0110  snapshot_epoch_0132
+snapshot_epoch_0001  snapshot_epoch_0023  snapshot_epoch_0045  snapshot_epoch_0067  snapshot_epoch_0089  snapshot_epoch_0111  snapshot_epoch_0133
+snapshot_epoch_0002  snapshot_epoch_0024  snapshot_epoch_0046  snapshot_epoch_0068  snapshot_epoch_0090  snapshot_epoch_0112  snapshot_epoch_0134
+snapshot_epoch_0003  snapshot_epoch_0025  snapshot_epoch_0047  snapshot_epoch_0069  snapshot_epoch_0091  snapshot_epoch_0113  snapshot_epoch_0135
+snapshot_epoch_0004  snapshot_epoch_0026  snapshot_epoch_0048  snapshot_epoch_0070  snapshot_epoch_0092  snapshot_epoch_0114  snapshot_epoch_0136
+snapshot_epoch_0005  snapshot_epoch_0027  snapshot_epoch_0049  snapshot_epoch_0071  snapshot_epoch_0093  snapshot_epoch_0115  snapshot_epoch_0137
+snapshot_epoch_0006  snapshot_epoch_0028  snapshot_epoch_0050  snapshot_epoch_0072  snapshot_epoch_0094  snapshot_epoch_0116  snapshot_epoch_0138
+snapshot_epoch_0007  snapshot_epoch_0029  snapshot_epoch_0051  snapshot_epoch_0073  snapshot_epoch_0095  snapshot_epoch_0117  snapshot_epoch_0139
+snapshot_epoch_0008  snapshot_epoch_0030  snapshot_epoch_0052  snapshot_epoch_0074  snapshot_epoch_0096  snapshot_epoch_0118  snapshot_epoch_0140
+snapshot_epoch_0009  snapshot_epoch_0031  snapshot_epoch_0053  snapshot_epoch_0075  snapshot_epoch_0097  snapshot_epoch_0119  snapshot_epoch_0141
+snapshot_epoch_0010  snapshot_epoch_0032  snapshot_epoch_0054  snapshot_epoch_0076  snapshot_epoch_0098  snapshot_epoch_0120  snapshot_epoch_0142
+snapshot_epoch_0011  snapshot_epoch_0033  snapshot_epoch_0055  snapshot_epoch_0077  snapshot_epoch_0099  snapshot_epoch_0121  snapshot_epoch_0143
+snapshot_epoch_0012  snapshot_epoch_0034  snapshot_epoch_0056  snapshot_epoch_0078  snapshot_epoch_0100  snapshot_epoch_0122  snapshot_epoch_0144
+snapshot_epoch_0013  snapshot_epoch_0035  snapshot_epoch_0057  snapshot_epoch_0079  snapshot_epoch_0101  snapshot_epoch_0123  snapshot_epoch_0145
+snapshot_epoch_0014  snapshot_epoch_0036  snapshot_epoch_0058  snapshot_epoch_0080  snapshot_epoch_0102  snapshot_epoch_0124  snapshot_epoch_0146
+snapshot_epoch_0015  snapshot_epoch_0037  snapshot_epoch_0059  snapshot_epoch_0081  snapshot_epoch_0103  snapshot_epoch_0125  snapshot_epoch_0147
+snapshot_epoch_0016  snapshot_epoch_0038  snapshot_epoch_0060  snapshot_epoch_0082  snapshot_epoch_0104  snapshot_epoch_0126  snapshot_epoch_0148
+snapshot_epoch_0017  snapshot_epoch_0039  snapshot_epoch_0061  snapshot_epoch_0083  snapshot_epoch_0105  snapshot_epoch_0127  snapshot_epoch_0149
+snapshot_epoch_0018  snapshot_epoch_0040  snapshot_epoch_0062  snapshot_epoch_0084  snapshot_epoch_0106  snapshot_epoch_0128  snapshot_epoch_0150
+snapshot_epoch_0019  snapshot_epoch_0041  snapshot_epoch_0063  snapshot_epoch_0085  snapshot_epoch_0107  snapshot_epoch_0129  validation.main.fscore.epoch_031.pred
+snapshot_epoch_0020  snapshot_epoch_0042  snapshot_epoch_0064  snapshot_epoch_0086  snapshot_epoch_0108  snapshot_epoch_0130
+```
+
+Running `python3 pyner/named_entity/inference.py` will generate prediction results on `model/conll2003.lample.skipngram.YYYY-MM-DDTxx:xx:xx.xxxxxx`
+A file name would be `{metrics}.epoch_{xxx}.pred`.
+`inference.py` check a log and select a model which achieve most high f1 score on development set.
+You can use other selection criteria such as watching loss value and specifying an epoch.
+
+- Dev loss: `python3 pyner/named_entity/inference.py --metrics validation/main/loss model/conll2003.lample.skipngram.2019-09-24T07:02:33.536822`)
+- Specific epoch: `python3 pyner/named_entity/inference.py --epoch 1 model/conll2003.lample.skipngram.2019-09-24T07:02:33.536822`
+
+If you could generate a prediction file, it's time to evaluate a model performance.
+[conlleval](https://www.clips.uantwerpen.be/conll2000/chunking/output.html) is the standard script to evaluate CoNLL Chunking/NER tasks.
+First of all, we have to download `conlleval`.
+Running the command `make get-conlleval` would download `conlleval` on current directory.
+Then, evaluate!!!
+
+```
+$ ./conlleval < model/conll2003.lample.skipngram.2019-09-24T07:02:33.536822/validation.main.fscore.epoch_139.pred
+processed 46435 tokens with 5628 phrases; found: 5651 phrases; correct: 5134.
+accuracy:  97.82%; precision:  90.85%; recall:  91.22%; FB1:  91.04
+              LOC: precision:  93.41%; recall:  92.18%; FB1:  92.79  1640
+             MISC: precision:  80.66%; recall:  80.66%; FB1:  80.66  693
+              ORG: precision:  88.72%; recall:  89.79%; FB1:  89.26  1676
+              PER: precision:  94.76%; recall:  96.23%; FB1:  95.49  1642
+```
+
+F1 score on test set is 91.04, which is approximately the same as the result in Lample's paper! (90.94)
 
 
 ### Reference
@@ -95,6 +240,6 @@ To use this, please run `make get-lample` before running `make build`.
   - NAACL2016, Lample et al.
 
 
-[Neural Architectures for Named Entity Recognition]: https://arxiv.org/abs/1603.01360
+[Neural Architectures for Named Entity Recognition]: https://aclweb.org/anthology/N16-1030
 [Official repo's issue]: https://github.com/glample/tagger/issues/44
-[CoNLL2003]: https://www.clips.uantwerpen.be/conll2003/ner/
+[CoNLL 2003]: https://www.clips.uantwerpen.be/conll2003/ner/
