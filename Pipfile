@@ -15,6 +15,7 @@ pytest = "*"
 python-language-server = "*"
 pep8 = "*"
 pylint = "*"
+rope = "*"
 
 [packages]
 tiny-tokenizer = {extras = ["all"],version = "*"}
