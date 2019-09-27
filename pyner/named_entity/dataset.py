@@ -1,9 +1,9 @@
 import logging
 from pathlib import Path
 
-import chainer.cuda
 import chainer.dataset as D
 import numpy as np
+from chainer.backends import cuda
 
 logger = logging.getLogger(__name__)
 
@@ -30,16 +30,19 @@ def update_instances(train_datas, params, mode):
 
 
 def converter(batch, device=-1):
-    xp = chainer.cuda.cupy if device >= 0 else np
-
     # transpose
-    word_sentences, char_sentences, tag_sentences = list(zip(*batch))
     wss, css, tss = list(zip(*batch))
 
     # make ndarray
+    xp = cuda.cupy if device >= 0 else np
     wss = [xp.asarray(ws, dtype=xp.int32) for ws in wss]
-    tss = [xp.asarray(ts, dtype=xp.int32) for ts in tss]
     css = [[xp.asarray(c, dtype=xp.int32) for c in cs] for cs in css]
+
+    if tss[0] is not None:
+        tss = [xp.asarray(ts, dtype=xp.int32) for ts in tss]
+    else:
+        tss = None
+
     return (wss, css), tss
 
 
@@ -61,10 +64,13 @@ class DatasetTransformer:
 
     def transform(self, word_sentence, tag_sentence):
         wordid_sentence = self._to_id(word_sentence, self.word2idx)
-        tagid_sentence = self._to_id(tag_sentence, self.tag2idx)
-        charid_sentence = [
-            self._to_id(cs, self.char2idx) for cs in word_sentence
-        ]  # NOQA
+        charid_sentence = [self._to_id(cs, self.char2idx) for cs in word_sentence]  # NOQA
+
+        if tag_sentence is not None:
+            tagid_sentence = self._to_id(tag_sentence, self.tag2idx)
+        else:
+            tagid_sentence = None
+
         return wordid_sentence, charid_sentence, tagid_sentence
 
     def itransform(self, wordid_sentences, tagid_sentences):
@@ -78,8 +84,8 @@ class DatasetTransformer:
         return [self._itransform(ws, ts) for ws, ts in sentences]
 
     def _itransform(self, wordid_sentence, tagid_sentence):
-        wordid_sentence = chainer.cuda.to_cpu(wordid_sentence)
-        tagid_sentence = chainer.cuda.to_cpu(tagid_sentence)
+        wordid_sentence = cuda.to_cpu(wordid_sentence)
+        tagid_sentence = cuda.to_cpu(tagid_sentence)
         word_sentence = [self.idx2word[wid] for wid in wordid_sentence]
         tag_sentence = [self.idx2tag[tid] for tid in tagid_sentence]
 
