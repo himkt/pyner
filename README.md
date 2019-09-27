@@ -112,7 +112,7 @@ Then, you can create the dataset for pyner by following command.
 After running the command, `./data/processed/CoNLL2003_BIOES` will be generated for you.
 
 ```
-$ python pyner/tool/corpus/parse_CoNLL2003.py \
+$ python bin/parse_CoNLL2003.py \
   --data-dir     data/external/conll2003 \
   --output-dir   data/processed/CoNLL2003_BIOES \
   --convert-rule iob2bioes
@@ -150,8 +150,8 @@ $ make get-lample
 rm -rf data/external/GloveEmbeddings
 mkdir -p data/external/LampleEmbeddings
 mkdir -p data/processed/LampleEmbeddings
-python pyner/tool/vector/fetch_lample_embedding.py
-python pyner/tool/vector/prepare_embeddings.py \
+python bin/fetch_lample_embedding.py
+python bin/prepare_embeddings.py \
                 data/external/LampleEmbeddings/skipngram_100d.txt \
                 data/processed/LampleEmbeddings/skipngram_100d \
                 --format word2vec
