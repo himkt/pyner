@@ -2,15 +2,16 @@ import logging
 import pathlib
 
 import click
-from pyner.tool.corpus.common import CorpusParser
-from pyner.tool.corpus.common import enum
-from pyner.tool.corpus.common import write_sentences
-from pyner.tool.corpus.common import write_vocab
+
+from pyner.named_entity.corpus import CorpusParser
+from pyner.named_entity.corpus import enum
+from pyner.named_entity.corpus import write_sentences
+from pyner.named_entity.corpus import write_vocab
 
 SEED = 42
-BOS  = 0  # begin of step
-EOS  = 1  # end  of step
-XXX  = 2  # other
+BOS = 0  # begin of step
+EOS = 1  # end  of step
+XXX = 2  # other
 
 
 @click.command()

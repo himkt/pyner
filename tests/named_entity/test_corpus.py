@@ -1,7 +1,7 @@
-from pyner.tool.corpus.common import CorpusParser
-from pyner.tool.corpus.common import bio2bioes
-from pyner.tool.corpus.common import enum
-from pyner.tool.corpus.common import iob2bio
+from pyner.named_entity.corpus import CorpusParser
+from pyner.named_entity.corpus import bio2bioes
+from pyner.named_entity.corpus import enum
+from pyner.named_entity.corpus import iob2bio
 
 TEST_CoNLL2003_1 = '''\
 -DOCSTART- -X- O O

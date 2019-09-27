@@ -1,9 +1,9 @@
 import logging
-from pathlib import Path
 
 import chainer.dataset as D
 import numpy as np
 from chainer.backends import cuda
+import os.path
 
 logger = logging.getLogger(__name__)
 
@@ -30,10 +30,8 @@ def update_instances(train_datas, params, mode):
 
 
 def converter(batch, device=-1):
-    # transpose
     wss, css, tss = list(zip(*batch))
 
-    # make ndarray
     xp = cuda.cupy if device >= 0 else np
     wss = [xp.asarray(ws, dtype=xp.int32) for ws in wss]
     css = [[xp.asarray(c, dtype=xp.int32) for c in cs] for cs in css]
@@ -94,8 +92,7 @@ class DatasetTransformer:
 
 class SequenceLabelingDataset(D.DatasetMixin):
     def __init__(self, vocab, params, mode, transform):
-        data_dir = Path(params["data_dir"])
-        data_path = data_dir / f"{mode}.txt"
+        data_path = os.path.join(params["data_dir"], f"{mode}.txt")
         datas = vocab.load_word_sentences(data_path)
         word_sentences, tag_sentences = update_instances(datas, params, mode)
         self.word_sentences = word_sentences

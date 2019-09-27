@@ -5,7 +5,6 @@ import chainer
 import chainer.functions as F
 import chainer.links as L
 from chainer import initializers, reporter
-
 from pyner.named_entity.nn import CharLSTM_Encoder
 
 logger = logging.getLogger(__name__)

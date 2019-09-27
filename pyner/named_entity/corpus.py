@@ -74,10 +74,10 @@ def bio2bioes(tags):
         state, label = split_tag(tag)
 
         if t == last_index:
-            next_state, next_label = "O", None
+            next_state, _ = "O", None
 
         else:
-            next_state, next_label = split_tag(tags[t + 1])
+            next_state, _ = split_tag(tags[t + 1])
 
         # case1. B-ORG O or B-ORG B-ORG
         #        ^^^^^      ^^^^^
