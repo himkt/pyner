@@ -55,7 +55,7 @@ def run_training(config: str, device: int, seed: int):
     params = yaml.load(open(config, encoding="utf-8"))
 
     if device >= 0:
-        chainer.cuda.get_device(device).use()
+        cuda.get_device(device).use()
 
     set_seed(seed, device)
 

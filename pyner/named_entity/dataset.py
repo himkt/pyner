@@ -30,10 +30,8 @@ def update_instances(train_datas, params, mode):
 
 
 def converter(batch, device=-1):
-    # transpose
     wss, css, tss = list(zip(*batch))
 
-    # make ndarray
     xp = cuda.cupy if device >= 0 else np
     wss = [xp.asarray(ws, dtype=xp.int32) for ws in wss]
     css = [[xp.asarray(c, dtype=xp.int32) for c in cs] for cs in css]
