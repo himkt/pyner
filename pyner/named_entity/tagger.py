@@ -20,8 +20,13 @@ from pyner.util.vocab import Vocabulary
 @click.option("--epoch", type=int)
 @click.option("--device", type=int, default=-1)
 @click.option("--metric", type=str, default="validation/main/fscore")
+@click.option("--tokenizer", type=str, default="mecab")
 def run_inference(
-        model_dir: str, epoch: Optional[int], device: str, metric: str):
+        model_dir: str,
+        epoch: Optional[int],
+        device: str,
+        metric: str,
+        tokenizer: str):
     chainer.config.train = False
 
     if device >= 0:
@@ -48,7 +53,7 @@ def run_inference(
         model.to_gpu(device)
 
     transformer = DatasetTransformer(vocab)
-    word_tokenizer = WordTokenizer("mecab")
+    word_tokenizer = WordTokenizer(tokenizer=tokenizer)
 
     for line in sys.stdin:
         input_sentence = [str(t) for t in word_tokenizer.tokenize(line)]
