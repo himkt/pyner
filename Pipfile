@@ -18,4 +18,4 @@ pylint = "*"
 rope = "*"
 
 [packages]
-tiny-tokenizer = {extras = ["all"],version = "*"}
+tiny_tokenizer = {extras = ["all"],version = "*"}
