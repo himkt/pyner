@@ -1,5 +1,4 @@
 import chainer.iterators as It
-
 from pyner.named_entity.dataset import SequenceLabelingDataset
 
 

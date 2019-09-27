@@ -2,13 +2,13 @@ import datetime
 import logging
 from pathlib import Path
 
-import chainer
+import click
+
 import chainer.training as T
 import chainer.training.extensions as E
-import click
 import yaml
+from chainer.backends import cuda
 from chainerui.utils import save_args
-
 from pyner.named_entity.dataset import DatasetTransformer, converter
 from pyner.named_entity.evaluator import NamedEntityEvaluator
 from pyner.named_entity.recognizer import BiLSTM_CRF
