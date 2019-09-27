@@ -1,0 +1,21 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+# [requires]
+# python_version = '3.7.0'
+
+[dev-packages]
+autopep8 = "*"
+black = "==19.3b0"
+flake8 = "*"
+ipython = "*"
+isort = "*"
+pytest = "*"
+python-language-server = "*"
+pep8 = "*"
+pylint = "*"
+rope = "*"
+
+[packages]
+tiny-tokenizer = {extras = ["all"],version = "*"}

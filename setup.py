@@ -26,6 +26,9 @@ install_requires.append("chainer==7.0.0b2")
 install_requires.append("chainerui==0.9.0")
 install_requires.append("PyYAML==5.1.1")
 
+extra_requires = []
+extra_requires.append("tiny_tokenizer")
+
 if cupy_version is not None:
     install_requires.append(cupy_version)
 
@@ -38,4 +41,7 @@ setup(
     url="https://github.com/himkt/pyner",
     packages=find_packages(),
     install_requires=install_requires,
+    extras_require={
+        "tagger": ["tiny_tokenizer"]
+    },
 )
