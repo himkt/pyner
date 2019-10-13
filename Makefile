@@ -23,7 +23,7 @@ start:
 		-it $(TAG)
 
 test:
-	python -m unittest discover
+	pipenv run python -m unittest discover
 
 lint:
 	flake8 pyner
@@ -34,7 +34,7 @@ get-glove:
 	cd data/external/GloveEmbeddings && wget http://nlp.stanford.edu/data/glove.6B.zip
 	cd data/external/GloveEmbeddings && unzip glove.6B.zip
 	cd data/external/GloveEmbeddings && rm glove.6B.zip
-	python pyner/tool/vector/prepare_embeddings.py \
+	pipenv run python bin/prepare_embeddings.py \
 		data/external/GloveEmbeddings/glove.6B.100d.txt \
 		data/processed/GloveEmbeddings/glove.6B.100d \
 		--format glove
@@ -43,8 +43,13 @@ get-lample:
 	rm -rf data/external/GloveEmbeddings
 	mkdir -p data/external/LampleEmbeddings
 	mkdir -p data/processed/LampleEmbeddings
-	python pyner/tool/vector/fetch_lample_embedding.py
-	python pyner/tool/vector/prepare_embeddings.py \
+	pipenv run python bin/fetch_lample_embedding.py
+	pipenv run python bin/prepare_embeddings.py \
 			data/external/LampleEmbeddings/skipngram_100d.txt \
 			data/processed/LampleEmbeddings/skipngram_100d \
 			--format word2vec
+
+get-conlleval:
+	curl https://www.clips.uantwerpen.be/conll2000/chunking/conlleval.txt > conlleval
+	chmod 777 conlleval
+

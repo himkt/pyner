@@ -1,13 +1,13 @@
 from pyner.util.vocab import Vocabulary
 
 
-PARAMS1 = {'external': {'data_dir': './tests/test_data/v1'},
+PARAMS1 = {'external': {'data_dir': './tests/util/test_data/v1'},
            'preprocessing': {'replace_zero': True}}
 
-PARAMS2 = {'external': {'data_dir': './tests/test_data/v1'},
+PARAMS2 = {'external': {'data_dir': './tests/util/test_data/v1'},
            'preprocessing': {'lower': True}}
 
-PARAMS3 = {'external': {'data_dir': './tests/test_data/v1'},
+PARAMS3 = {'external': {'data_dir': './tests/util/test_data/v1'},
            'preprocessing': {'replace_zero': True, 'lower': True}}
 
 

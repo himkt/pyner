@@ -2,24 +2,24 @@ import json
 import logging
 import operator
 import typing
-from pathlib import Path
+import os.path
 
 logger = logging.getLogger(__name__)
 
 
 def select_snapshot(
-    epoch: int, metric: typing.Optional[str], model: str, model_dir: str
+    epoch: int, metric: typing.Optional[str], model: str
 ):
     if epoch is None:
-        epoch, max_value = argmax_metric(model_dir / "log", metric)
+        epoch, max_value = argmax_metric(os.path.join(model, "log"), metric)
         logger.debug(f"Epoch is {epoch:04d} ({metric}: {max_value:.2f})")  # NOQA
         metric_repr = metric.replace("/", ".")
-        prediction_path = Path(model, f"{metric_repr}.epoch_{epoch:03d}.pred")  # NOQA
+        prediction_path = os.path.join(model, f"{metric_repr}.epoch_{epoch:03d}.pred")  # NOQA
 
     else:
         epoch = epoch
         logger.debug(f"Epoch is {epoch:04d} (which is specified manually)")
-        prediction_path = Path(model, f"epoch_{epoch:03d}.pred")
+        prediction_path = os.path.join(model, f"epoch_{epoch:03d}.pred")
 
     snapshot_file = f"snapshot_epoch_{epoch:04d}"
     return snapshot_file, prediction_path

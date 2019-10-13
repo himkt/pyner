@@ -1,7 +1,7 @@
-from pyner.tool.corpus.common import CorpusParser
-from pyner.tool.corpus.common import bio2bioes
-from pyner.tool.corpus.common import enum
-from pyner.tool.corpus.common import iob2bio
+from pyner.named_entity.corpus import CorpusParser
+from pyner.named_entity.corpus import bio2bioes
+from pyner.named_entity.corpus import enum
+from pyner.named_entity.corpus import iob2bio
 
 TEST_CoNLL2003_1 = '''\
 -DOCSTART- -X- O O
@@ -11,7 +11,7 @@ Ekeus        NNP  I-NP  I-PER
 heads        VBZ  I-VP  O 
 for          IN   I-PP  O 
 Baghdad      NNP  I-NP  I-LOC 
-.            .    O     O 
+.            .    O     O
 '''.split('\n')  # NOQA
 
 
@@ -36,9 +36,11 @@ def test_enum1():
 
 
 def test_parse1():
-    parser = CorpusParser()
-    word_sentences, tag_sentences = \
-        parser._parse(TEST_CoNLL2003_1, word_idx=0, tag_idx=-1)
+    parser = CorpusParser(convert_rule=None, delimiter=r" +")
+    word_sentences, tag_sentences = parser._parse(
+        TEST_CoNLL2003_1,
+        word_idx=0,
+        tag_idx=-1)
     assert word_sentences == [WORDS_CoNLL_1]
     assert tag_sentences == [TAGS_CoNLL_1]
 

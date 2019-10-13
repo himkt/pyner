@@ -74,10 +74,10 @@ def bio2bioes(tags):
         state, label = split_tag(tag)
 
         if t == last_index:
-            next_state, next_label = "O", None
+            next_state, _ = "O", None
 
         else:
-            next_state, next_label = split_tag(tags[t + 1])
+            next_state, _ = split_tag(tags[t + 1])
 
         # case1. B-ORG O or B-ORG B-ORG
         #        ^^^^^      ^^^^^
@@ -141,11 +141,13 @@ def enum(word_sentences, tag_sentences):
     return words, chars, tags
 
 
-def write_sentences(prefix, elem, prefix_elem_sentences, output_path):
-    target = output_path / f"{prefix}.{elem}.txt"
+def write_sentences(mode, sentences, output_path):
+    target = output_path / f"{mode}.txt"
     with open(target, "w") as file:
-        for _elem_sentence in prefix_elem_sentences:
-            print(" ".join(_elem_sentence), file=file)
+        for sentence in sentences:
+            for token in zip(*sentence):
+                print("\t".join(token), file=file)
+            print("", file=file)
 
 
 def write_vocab(prefix, elems, output_path):
@@ -155,9 +157,10 @@ def write_vocab(prefix, elems, output_path):
 
 
 class CorpusParser:
-    def __init__(self, format_str=None):
-        if format_str:
-            in_format, out_format = format_str.split("2")
+    def __init__(self, convert_rule, delimiter):
+        self.delimiter = delimiter
+        if convert_rule:
+            in_format, out_format = convert_rule.split("2")
             self.format_func_list = get_word_format_func(in_format, out_format)
 
         else:
@@ -179,9 +182,10 @@ class CorpusParser:
         tag_sentence = []
 
         for line in document:
-            line = line.rstrip()
-            pattern = re.compile(" +")
-            elems = re.split(pattern, line)
+            line = line \
+                .rstrip(" ") \
+                .rstrip("\n")
+            elems = re.split(self.delimiter, line)
 
             if line.startswith("-DOCSTART-"):
                 continue
