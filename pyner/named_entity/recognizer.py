@@ -151,8 +151,9 @@ class BiLSTM_CRF(chainer.Chain):
             lstm_inputs.append(word_repr)
 
         if self.char_dim is not None:
-            # NOTE [[list[int]]
+            # (batch, word_len, char_len]
             char_repr = self.char_level_encoder(char_sentences)
+            # (batch*word_len, char_hidden_dim)
             char_repr = F.dropout(char_repr, self.dropout_rate)
             lstm_inputs.append(char_repr)
 
