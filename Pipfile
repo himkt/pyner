@@ -16,6 +16,10 @@ python-language-server = "*"
 pep8 = "*"
 pylint = "*"
 rope = "*"
+v = {editable = true,version = "*"}
 
 [packages]
 tiny_tokenizer = {extras = ["all"],version = "*"}
+click = "*"
+pyner = {editable = true,path = "."}
+gensim = "*"
