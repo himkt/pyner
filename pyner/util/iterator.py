@@ -2,7 +2,10 @@ import chainer.iterators as It
 from pyner.named_entity.dataset import SequenceLabelingDataset
 
 
-def create_iterator(vocab, configs, mode, transform):
+def create_iterator(
+        vocab, configs, mode, transform,
+        return_original_sentence=False
+):
     if "iteration" not in configs:
         raise Exception("Batch configurations are not found")
 
@@ -13,7 +16,13 @@ def create_iterator(vocab, configs, mode, transform):
     iteration_configs = configs["iteration"]
     external_configs = configs["external"]
 
-    dataset = SequenceLabelingDataset(vocab, external_configs, mode, transform)
+    dataset = SequenceLabelingDataset(
+        vocab,
+        external_configs,
+        mode,
+        transform,
+        return_original_sentence=return_original_sentence
+    )
     batch_size = iteration_configs["batch_size"] if is_train else len(dataset)
 
     iterator = It.SerialIterator(

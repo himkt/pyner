@@ -49,10 +49,17 @@ def run_inference(
 
     transformer = DatasetTransformer(vocab)
     transform = transformer.transform
-    test_iterator = create_iterator(vocab, configs, "test", transform)
+    test_iterator = create_iterator(
+        vocab,
+        configs,
+        "test",
+        transform,
+        return_original_sentence=True
+    )
 
     with open(prediction_path, "w", encoding="utf-8") as file:
         for batch in test_iterator:
+            batch, original_sentences = list(zip(*batch))
             in_arrays, t_arrays = converter(batch, device)
             p_arrays = model.predict(in_arrays)
 
@@ -63,10 +70,18 @@ def run_inference(
                 zip(*transformer.itransform(in_arrays[0], p_arrays))
             )
 
-            sentence_gen = zip(word_sentences, t_tag_sentences, p_tag_sentences)  # NOQA
-            for ws, ts, ps in sentence_gen:
-                for w, t, p in zip(ws, ts, ps):
+            sentence_gen = zip(
+                word_sentences,
+                t_tag_sentences,
+                p_tag_sentences,
+                original_sentences,
+            )  # NOQA
+            for ws, ts, ps, _os in sentence_gen:
+                for w, t, p, o in zip(ws, ts, ps, _os):
                     w = w.replace(" ", "<WHITESPACE>")
+                    o = o.replace(" ", "<WHITESPACE>")
+                    if w != o:
+                        w = f"{w}({o})"
                     print(f"{w} {t} {p}", file=file)
                 print(file=file)
 

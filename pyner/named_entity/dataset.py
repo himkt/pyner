@@ -91,13 +91,15 @@ class DatasetTransformer:
 
 
 class SequenceLabelingDataset(D.DatasetMixin):
-    def __init__(self, vocab, params, mode, transform):
+    def __init__(self, vocab, params, mode, transform,
+                 return_original_sentence=False):
         data_path = os.path.join(params["data_dir"], f"{mode}.txt")
         datas = vocab.load_word_sentences(data_path)
         word_sentences, tag_sentences = update_instances(datas, params, mode)
         self.word_sentences = word_sentences
         self.tag_sentences = tag_sentences
 
+        self.return_original_sentence = return_original_sentence
         self.num_sentences = len(word_sentences)
         self.transform = transform
 
@@ -107,4 +109,9 @@ class SequenceLabelingDataset(D.DatasetMixin):
     def get_example(self, i):
         word_line = self.word_sentences[i]
         tag_line = self.tag_sentences[i]
-        return self.transform(word_line, tag_line)
+
+        ret = self.transform(word_line, tag_line)
+        if self.return_original_sentence:
+            return ret, word_line
+        else:
+            return ret
