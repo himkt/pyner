@@ -19,17 +19,17 @@ You can try `pyner` on a local machine or a docker container.
 
 ## 1. Local Machine
 
-- setup
+- setup (If you do not install [pipenv](https://github.com/pypa/pipenv), please install)
 
 ```
-pip3 install .
+pipenv install
 ```
 
 - train
 
 ```
 # If a GPU is not available, specify `--gpu -1`
-python3 pyner/named_entity/train.py config/training/conll2003.lample.yaml --device 0
+pipenv run python pyner/named_entity/train.py config/training/conll2003.lample.yaml --device 0
 ```
 
 ## 2. Docker container
