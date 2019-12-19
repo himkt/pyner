@@ -12,8 +12,7 @@ build:
 	$(SUDO) $(DOCKER) build \
 		-t $(TAG) . \
 		--build-arg GID=$(USERGROUPID) \
-		--build-arg UID=$(USERID) \
-		--file=docker/Dockerfile
+		--build-arg UID=$(USERID)
 
 start:
 	$(SUDO) $(DOCKER) run \
@@ -52,4 +51,3 @@ get-lample:
 get-conlleval:
 	curl https://www.clips.uantwerpen.be/conll2000/chunking/conlleval.txt > conlleval
 	chmod 777 conlleval
-

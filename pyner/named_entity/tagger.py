@@ -54,6 +54,7 @@ def run_inference(
 
     transformer = DatasetTransformer(vocab)
     word_tokenizer = WordTokenizer(tokenizer=tokenizer)
+    print("Successfully loading a model, please input a sentence")
 
     for line in sys.stdin:
         input_sentence = [str(t) for t in word_tokenizer.tokenize(line)]
