@@ -41,34 +41,36 @@ def main(data_dir: str, output_dir: str, convert_rule: str, delimiter: str):
     valid_word_sentences, valid_tag_sentences = corpus_parser.parse_file(  # NOQA
         data_path / "eng.iob.testa", word_idx=0
     )
-    _, _, valid_tags = enum(
-        valid_word_sentences, valid_tag_sentences
-    )
+    _, _, valid_tags = enum(valid_word_sentences, valid_tag_sentences)
 
     logging.info("parsing corpus for testing")
     test_word_sentences, test_tag_sentences = corpus_parser.parse_file(
         data_path / "eng.iob.testb", word_idx=0
     )
-    _, _, test_tags = enum(
-        test_word_sentences, test_tag_sentences
-    )
+    _, _, test_tags = enum(test_word_sentences, test_tag_sentences)
 
     for mode in ["train", "valid", "test"]:
         if mode == "train":
-            sentences = list(zip(
-                train_word_sentences,
-                train_tag_sentences,
-            ))
+            sentences = list(
+                zip(
+                    train_word_sentences,
+                    train_tag_sentences,
+                )
+            )
         elif mode == "valid":
-            sentences = list(zip(
-                valid_word_sentences,
-                valid_tag_sentences,
-            ))
+            sentences = list(
+                zip(
+                    valid_word_sentences,
+                    valid_tag_sentences,
+                )
+            )
         elif mode == "test":
-            sentences = list(zip(
-                test_word_sentences,
-                test_tag_sentences,
-            ))
+            sentences = list(
+                zip(
+                    test_word_sentences,
+                    test_tag_sentences,
+                )
+            )
 
         logging.info("Create %s dataset", mode)
         write_sentences(mode, sentences, output_path)

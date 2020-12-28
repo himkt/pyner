@@ -2,17 +2,14 @@ import chainer.iterators as It
 from pyner.named_entity.dataset import SequenceLabelingDataset
 
 
-def create_iterator(
-        vocab, configs, mode, transform,
-        return_original_sentence=False
-):
+def create_iterator(vocab, configs, mode, transform, return_original_sentence=False):
     if "iteration" not in configs:
         raise Exception("Batch configurations are not found")
 
     if "external" not in configs:
         raise Exception("External data configurations are not found")
 
-    is_train = (mode == "train")
+    is_train = mode == "train"
     iteration_configs = configs["iteration"]
     external_configs = configs["external"]
 
@@ -21,14 +18,11 @@ def create_iterator(
         external_configs,
         mode,
         transform,
-        return_original_sentence=return_original_sentence
+        return_original_sentence=return_original_sentence,
     )
     batch_size = iteration_configs["batch_size"] if is_train else len(dataset)
 
     iterator = It.SerialIterator(
-        dataset,
-        batch_size=batch_size,
-        repeat=is_train,
-        shuffle=is_train
+        dataset, batch_size=batch_size, repeat=is_train, shuffle=is_train
     )
     return iterator

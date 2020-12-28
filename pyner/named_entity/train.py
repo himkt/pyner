@@ -20,7 +20,11 @@ from pyner.util.vocab import Vocabulary
 
 
 def prepare_pretrained_word_vector(
-        word2idx, gensim_model, syn0, num_word_vocab):
+    word2idx,
+    gensim_model,
+    syn0,
+    num_word_vocab,
+):
 
     # if lowercased word is in pre-trained embeddings,
     # increment match2
@@ -40,9 +44,13 @@ def prepare_pretrained_word_vector(
     match = match1 + match2
     matching_rate = 100 * (match / num_word_vocab)
 
-    logger.info(f"Found \x1b[31m{matching_rate:.2f}%\x1b[0m words in pre-trained vocab")  # NOQA
+    logger.info(
+        f"Found \x1b[31m{matching_rate:.2f}%\x1b[0m words in pre-trained vocab"
+    )  # NOQA
     logger.info(f"- num_word_vocab: \x1b[31m{num_word_vocab}\x1b[0m")
-    logger.info(f"- match1: \x1b[31m{match1}\x1b[0m, match2: \x1b[31m{match2}\x1b[0m")  # NOQA
+    logger.info(
+        f"- match1: \x1b[31m{match1}\x1b[0m, match2: \x1b[31m{match2}\x1b[0m"
+    )  # NOQA
     return syn0
 
 
@@ -139,14 +147,16 @@ def run_training(config: str, device: int, seed: int):
     trainer.extend(E.LogReport(trigger=epoch_trigger))
     trainer.extend(E.PrintReport(entries=entries), trigger=epoch_trigger)
     trainer.extend(E.ProgressBar(update_interval=20))
-    trainer.extend(E.snapshot_object(
-        model, filename=snapshot_filename), trigger=(1, "epoch"))
+    trainer.extend(
+        E.snapshot_object(model, filename=snapshot_filename), trigger=(1, "epoch")
+    )
 
     if "learning_rate_decay" in params:
         logger.debug("Enable Learning Rate decay")
         trainer.extend(
             LearningRateDecay(
-                "lr", params["learning_rate"], params["learning_rate_decay"]),
+                "lr", params["learning_rate"], params["learning_rate_decay"]
+            ),
             trigger=epoch_trigger,
         )
 
