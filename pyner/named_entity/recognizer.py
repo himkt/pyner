@@ -15,13 +15,7 @@ class BiLSTM_CRF(chainer.Chain):
     BiLSTM-CRF: Bidirectional LSTM + Conditional Random Field as a decoder
     """
 
-    def __init__(
-            self,
-            configs,
-            num_word_vocab,
-            num_char_vocab,
-            num_tag_vocab
-    ):
+    def __init__(self, configs, num_word_vocab, num_char_vocab, num_tag_vocab):
 
         super(BiLSTM_CRF, self).__init__()
         if "model" not in configs:
@@ -82,9 +76,7 @@ class BiLSTM_CRF(chainer.Chain):
 
         logger.debug("Use word level encoder")
         self.embed_word = L.EmbedID(
-            self.num_word_vocab,
-            self.word_dim,
-            initialW=self.initializer
+            self.num_word_vocab, self.word_dim, initialW=self.initializer
         )
 
     def _setup_char_encoder(self):
@@ -111,17 +103,17 @@ class BiLSTM_CRF(chainer.Chain):
             n_layers=self.num_word_hidden_layers,
             in_size=self.internal_hidden_dim,
             out_size=self.word_hidden_dim,
-            dropout=self.dropout_rate)
+            dropout=self.dropout_rate,
+        )
 
         self.linear = L.Linear(
             in_size=self.linear_input_dim,
             out_size=self.num_tag_vocab,
-            initialW=self.initializer)
+            initialW=self.initializer,
+        )
 
     def _setup_decoder(self):
-        self.crf = L.CRF1d(
-            n_label=self.num_tag_vocab,
-            initial_cost=self.initializer)
+        self.crf = L.CRF1d(n_label=self.num_tag_vocab, initial_cost=self.initializer)
 
     def forward(self, inputs, outputs, **kwargs):
         features = self.__extract__(inputs, **kwargs)
@@ -146,7 +138,9 @@ class BiLSTM_CRF(chainer.Chain):
 
         lstm_inputs = []
         if self.word_dim is not None:
-            word_repr = self.embed_word(self.xp.concatenate(word_sentences, axis=0))  # NOQA
+            word_repr = self.embed_word(
+                self.xp.concatenate(word_sentences, axis=0)
+            )  # NOQA
             word_repr = F.dropout(word_repr, self.dropout_rate)
             lstm_inputs.append(word_repr)
 
@@ -157,7 +151,9 @@ class BiLSTM_CRF(chainer.Chain):
             char_repr = F.dropout(char_repr, self.dropout_rate)
             lstm_inputs.append(char_repr)
 
-        lstm_inputs = F.split_axis(F.concat(lstm_inputs, axis=1), offsets[:-1], axis=0)  # NOQA
+        lstm_inputs = F.split_axis(
+            F.concat(lstm_inputs, axis=1), offsets[:-1], axis=0
+        )  # NOQA
         _, _, hs = self.word_level_bilstm(None, None, lstm_inputs)
         features = [self.linear(h) for h in hs]
         return features

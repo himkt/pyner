@@ -22,11 +22,8 @@ from pyner.util.vocab import Vocabulary
 @click.option("--metric", type=str, default="validation/main/fscore")
 @click.option("--tokenizer", type=str, default="mecab")
 def run_inference(
-        model_dir: str,
-        epoch: Optional[int],
-        device: str,
-        metric: str,
-        tokenizer: str):
+    model_dir: str, epoch: Optional[int], device: str, metric: str, tokenizer: str
+):
     chainer.config.train = False
 
     if device >= 0:
@@ -61,8 +58,10 @@ def run_inference(
         batch = transformer.transform(input_sentence, None)
         in_arr, _ = converter([batch])
         pd_arr = model.predict(in_arr)
-        (_, tag_sequence), = transformer.itransform(in_arr[0], pd_arr)
-        print(' '.join(f"{word}/{tag}" for word, tag in zip(input_sentence, tag_sequence)))  # NOQA
+        ((_, tag_sequence),) = transformer.itransform(in_arr[0], pd_arr)
+        print(
+            " ".join(f"{word}/{tag}" for word, tag in zip(input_sentence, tag_sequence))
+        )  # NOQA
 
 
 if __name__ == "__main__":

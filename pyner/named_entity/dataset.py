@@ -62,7 +62,9 @@ class DatasetTransformer:
 
     def transform(self, word_sentence, tag_sentence):
         wordid_sentence = self._to_id(word_sentence, self.word2idx)
-        charid_sentence = [self._to_id(cs, self.char2idx) for cs in word_sentence]  # NOQA
+        charid_sentence = [
+            self._to_id(cs, self.char2idx) for cs in word_sentence
+        ]  # NOQA
 
         if tag_sentence is not None:
             tagid_sentence = self._to_id(tag_sentence, self.tag2idx)
@@ -91,8 +93,7 @@ class DatasetTransformer:
 
 
 class SequenceLabelingDataset(D.DatasetMixin):
-    def __init__(self, vocab, params, mode, transform,
-                 return_original_sentence=False):
+    def __init__(self, vocab, params, mode, transform, return_original_sentence=False):
         data_path = os.path.join(params["data_dir"], f"{mode}.txt")
         datas = vocab.load_word_sentences(data_path)
         word_sentences, tag_sentences = update_instances(datas, params, mode)

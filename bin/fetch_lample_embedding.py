@@ -33,7 +33,7 @@ def save_response_content(response):
         for chunk in response.iter_content(chunk_size):
             if chunk:  # filter out keep-alive new chunks
                 cur_length += len(chunk)
-                cur_mbytes = cur_length / 1024**2
+                cur_mbytes = cur_length / 1024 ** 2
                 print(f"downloaded: {cur_mbytes:.4f} MB\r", end="")
                 f.write(chunk)
 

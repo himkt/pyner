@@ -20,8 +20,7 @@ from pyner.util.vocab import Vocabulary
 @click.option("--epoch", type=int)
 @click.option("--device", type=int, default=-1)
 @click.option("--metric", type=str, default="validation/main/fscore")
-def run_inference(
-        model_dir: str, epoch: Optional[int], device: str, metric: str):
+def run_inference(model_dir: str, epoch: Optional[int], device: str, metric: str):
     chainer.config.train = False
 
     if device >= 0:
@@ -50,11 +49,7 @@ def run_inference(
     transformer = DatasetTransformer(vocab)
     transform = transformer.transform
     test_iterator = create_iterator(
-        vocab,
-        configs,
-        "test",
-        transform,
-        return_original_sentence=True
+        vocab, configs, "test", transform, return_original_sentence=True
     )
 
     with open(prediction_path, "w", encoding="utf-8") as file:

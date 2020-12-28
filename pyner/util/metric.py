@@ -7,14 +7,14 @@ import os.path
 logger = logging.getLogger(__name__)
 
 
-def select_snapshot(
-    epoch: int, metric: typing.Optional[str], model: str
-):
+def select_snapshot(epoch: int, metric: typing.Optional[str], model: str):
     if epoch is None:
         epoch, max_value = argmax_metric(os.path.join(model, "log"), metric)
         logger.debug(f"Epoch is {epoch:04d} ({metric}: {max_value:.2f})")  # NOQA
         metric_repr = metric.replace("/", ".")
-        prediction_path = os.path.join(model, f"{metric_repr}.epoch_{epoch:03d}.pred")  # NOQA
+        prediction_path = os.path.join(
+            model, f"{metric_repr}.epoch_{epoch:03d}.pred"
+        )  # NOQA
 
     else:
         epoch = epoch
