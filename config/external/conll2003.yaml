@@ -1,2 +1,2 @@
 # training data
-data_dir: "./data/processed/CoNLL2003_BIOES"
+data_dir: "./data/processed/CoNLL2003"
