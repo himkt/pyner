@@ -1,5 +1,5 @@
 # training data
-data_dir: "./data/processed/CoNLL2003_BIOES"
+data_dir: "./data/processed/CoNLL2003"
 
 # pre-trained word vectors
 word_vector: "./data/processed/GloveEmbeddings/glove.6B.100d"
