@@ -22,13 +22,13 @@ You can try `pyner` on a local machine or a docker container.
 - setup (If you do not install [pipenv](https://github.com/pypa/pipenv), please install)
 
 ```
-pipenv install
+poetry install
 ```
 
 - train
 
 ```
-# If a GPU is not available, specify `--gpu -1`
+# If a GPU is not available, specify `--device -1`
 pipenv run python pyner/named_entity/train.py config/training/conll2003.lample.yaml --device 0
 ```
 
@@ -38,14 +38,12 @@ pipenv run python pyner/named_entity/train.py config/training/conll2003.lample.y
 
 ```
 make build
-make build SUDO=  # if you are not administrator
 ```
 
 - launch container
 
 ```
 make start
-make start SUDO=  # if you are not administrator
 ```
 
 - train
@@ -53,7 +51,7 @@ make start SUDO=  # if you are not administrator
 You have to execute this command in Docker container.
 
 ```
-# If a GPU is not available, specify `--gpu -1`
+# If a GPU is not available, specify `--device -1`
 python3 train.py config/training/conll2003.lample.yaml --device 0
 ```
 
@@ -98,24 +96,24 @@ If you could prepare CoNLL 2003 dataset, you would have three files like below.
 - eng.iob.testb
 - eng.iob.train
 
-Please put them to on same directoy (e.g. `data/external/conll2003`).
+Please put them to on same directoy (e.g. `data/external/CoNLL2003`).
 
 ```
-$ tree data/external/conll2003
-data/external/conll2003
+$ tree data/external/CoNLL2003
+data/external/CoNLL2003
 ├── eng.iob.testa
 ├── eng.iob.testb
 └── eng.iob.train
 ```
 
 Then, you can create the dataset for pyner by following command.
-After running the command, `./data/processed/CoNLL2003_BIOES` will be generated for you.
+After running the command, `./data/processed/CoNLL2003` will be generated for you.
 
 ```
 $ python bin/parse_CoNLL2003.py \
-  --data-dir     data/external/conll2003 \
-  --output-dir   data/processed/CoNLL2003_BIOES \
-  --convert-rule iob2bioes
+  --data-dir     data/external/CoNLL2003 \
+  --output-dir   data/processed/CoNLL2003 \
+  --convert-rule iob2bio
 2019-09-24 23:43:39,299 INFO root :create dataset for CoNLL2003
 2019-09-24 23:43:39,299 INFO root :create corpus parser
 2019-09-24 23:43:39,300 INFO root :parsing corpus for training
@@ -126,8 +124,8 @@ $ python bin/parse_CoNLL2003.py \
 2019-09-24 23:44:06,755 INFO root :Create test dataset
 2019-09-24 23:44:06,800 INFO root :Create vocabulary
 $
-$ tree data/processed/CoNLL2003_BIOES
-data/processed/CoNLL2003_BIOES
+$ tree data/processed/CoNLL2003
+data/processed/CoNLL2003
 ├── test.txt
 ├── train.txt
 ├── valid.txt
@@ -189,8 +187,8 @@ If you successfully train the model, some files are generated on `model/conll200
 
 ```
 $ ls -1 model/conll2003.lample.skipngram.2019-09-24T07:02:33.536822
-args               
-log                
+args
+log
 snapshot_epoch_0001
 snapshot_epoch_0002
 snapshot_epoch_0003
