@@ -1,0 +1,6 @@
+iteration: "./config/iteration/long.yaml"
+external: "./config/external/cpc1.0.yaml"
+model: "./config/model/lample.yaml"
+optimizer: "./config/optimizer/sgd_with_clipping.yaml"
+preprocessing: "./config/preprocessing/znorm.yaml"
+output: "./model/cpc1.0.lample"
